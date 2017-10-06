@@ -9,7 +9,14 @@
     "lib",
     "umd"
   ],
+  "lint-staged": {
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
+  },
   "scripts": {
+    "precommit": "lint-staged",
     "start": "nwb serve-react-demo",
     "build": "nwb build-react-component",
     "clean": "nwb clean-module && nwb clean-demo",
@@ -29,6 +36,8 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "eslint-plugin-react": "^7.4.0",
+    "husky": "^0.14.3",
+    "lint-staged": "^4.2.3",
     "nwb": "^0.19.0",
     "prettier": "^1.7.4",
     "prop-types": "^15.6.0",
