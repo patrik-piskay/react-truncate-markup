@@ -1,0 +1,264 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+
+const SPLIT = {
+  LEFT: true,
+  RIGHT: false,
+};
+
+export default class TruncateMarkup extends React.Component {
+  static propTypes = {
+    children: PropTypes.element.isRequired,
+    lines: PropTypes.number,
+    ellipsis: PropTypes.oneOfType([
+      PropTypes.element,
+      PropTypes.string,
+      PropTypes.func,
+    ]),
+  };
+
+  static defaultProps = {
+    lines: 1,
+    ellipsis: '...',
+  };
+
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      text: this._childrenElementWithRef(),
+    };
+
+    this._origText = this.state.text;
+    this._splitDirectionSeq = [];
+    this._endFound = false;
+    this._latestThatFits = null;
+    this._shouldTruncate = true;
+  }
+
+  componentDidMount() {
+    // get the computed line-height of the parent element
+    // it'll be used for determining whether the text fits the container or not
+    this._lineHeight = window
+      .getComputedStyle(this.el)
+      .getPropertyValue('line-height');
+
+    if (this._fits()) {
+      // the whole text fits on the first try, no need to do anything else
+      this._shouldTruncate = false;
+
+      return;
+    }
+
+    this._truncateOriginalText();
+  }
+
+  componentDidUpdate() {
+    if (!this._shouldTruncate) {
+      return;
+    }
+
+    if (this._endFound) {
+      // we've found the end where we cannot split the text further
+      // that means we've already found the max subtree that fits the container
+      // so we are rendering that
+      if (this.state.text !== this._latestThatFits) {
+        /* eslint-disable react/no-did-update-set-state */
+        this.setState({
+          text: this._latestThatFits,
+        });
+        /* eslint-enable */
+      } else if (this.el.clientWidth !== this._clientWidth) {
+        // edge case - scrollbar (dis?)appearing might mess up the container width
+        // causing strings that would normally fit on X lines to suddenly take up X+1 lines
+        // ugly fix - recalculate again
+        this._truncateOriginalText();
+      }
+
+      return;
+    }
+
+    if (this._fits()) {
+      this._latestThatFits = this.state.text;
+      this._clientWidth = this.el.clientWidth;
+      // we've found a subtree that fits the container
+      // but we need to check if we didn't cut too much of it off
+      // so we are changing the last splitting decision from splitting and going left
+      // to splitting and going right
+      this._splitDirectionSeq.splice(
+        this._splitDirectionSeq.length - 1,
+        1,
+        SPLIT.RIGHT,
+        SPLIT.LEFT,
+      );
+    } else {
+      this._splitDirectionSeq.push(SPLIT.LEFT);
+    }
+
+    this._tryToFit(this._origText, this._splitDirectionSeq);
+  }
+
+  componentWillUnmount() {
+    this._lineHeight = null;
+    this._origText = null;
+    this._latestThatFits = null;
+    this._splitDirectionSeq = [];
+  }
+
+  _childrenElementWithRef() {
+    const children = React.Children.only(this.props.children);
+
+    return React.cloneElement(children, { ref: el => (this.el = el) });
+  }
+
+  _truncateOriginalText() {
+    this._endFound = false;
+    this._splitDirectionSeq = [SPLIT.LEFT];
+
+    this._tryToFit(this._origText, this._splitDirectionSeq);
+  }
+
+  /**
+   * Splits rootEl based on instructions and updates React's state with the returned element
+   * After React rerenders the new text, we'll check if the new text fits in componentDidUpdate
+   * @param  {ReactElement} rootEl - the original children element
+   * @param  {Array} splitDirections - list of SPLIT.RIGHT/LEFT instructions
+   */
+  _tryToFit(rootEl, splitDirections) {
+    if (!rootEl.props.children) {
+      // no markup in container
+      return;
+    }
+
+    const newRootEl = this._split(rootEl, splitDirections);
+
+    const ellipsis =
+      typeof this.props.ellipsis === 'function'
+        ? this.props.ellipsis(newRootEl)
+        : this.props.ellipsis;
+
+    const newChildren = newRootEl.props.children;
+    const newChildrenWithEllipsis = Array.isArray(newChildren)
+      ? [...newChildren, ellipsis]
+      : [newChildren, ellipsis];
+
+    newRootEl.props.children = newChildrenWithEllipsis;
+
+    this.setState({
+      text: newRootEl,
+    });
+  }
+
+  /**
+   * Splits JSX node based on its type
+   * @param  {null|string|Array|Object} node - JSX node
+   * @param  {Array} splitDirections - list of SPLIT.RIGHT/LEFT instructions
+   * @return {null|string|Array|Object} - split JSX node
+   */
+  _split(node, splitDirections) {
+    if (!node) {
+      return node;
+    } else if (typeof node === 'string') {
+      return this._splitString(node, splitDirections);
+    } else if (Array.isArray(node)) {
+      return this._splitArray(node, splitDirections);
+    }
+    return {
+      ...node,
+      props: {
+        ...node.props,
+        children: this._split(node.props.children, splitDirections),
+      },
+    };
+  }
+
+  _splitString(string, splitDirections = []) {
+    if (!splitDirections.length) {
+      return string;
+    }
+
+    if (splitDirections.length && string.length === 1) {
+      // we are trying to split further but we have nowhere to go now
+      // that means we've already found the max subtree that fits the container
+      this._endFound = true;
+
+      return string;
+    }
+
+    const [splitDirection, ...restSplitDirections] = splitDirections;
+    const pivotIndex = Math.ceil(string.length / 2);
+
+    if (splitDirection === SPLIT.LEFT) {
+      const subString = string.substring(0, pivotIndex);
+
+      return this._splitString(subString, restSplitDirections);
+    }
+    const beforeString = string.substring(0, pivotIndex);
+    const afterString = string.substring(pivotIndex);
+
+    return beforeString + this._splitString(afterString, restSplitDirections);
+  }
+
+  _splitArray(array, splitDirections = []) {
+    if (!splitDirections.length) {
+      return array;
+    }
+
+    if (array.length === 1) {
+      const [item] = array;
+
+      if (typeof item === 'string') {
+        return [this._splitString(item, splitDirections)];
+      }
+      const { children } = item.props;
+
+      const newChildren = this._split(children, splitDirections);
+
+      return [
+        {
+          ...item,
+          props: {
+            ...item.props,
+            children: newChildren,
+          },
+        },
+      ];
+    }
+
+    const [splitDirection, ...restSplitDirections] = splitDirections;
+    const pivotIndex = Math.ceil(array.length / 2);
+
+    if (splitDirection === SPLIT.LEFT) {
+      const subArray = array.slice(0, pivotIndex);
+
+      return this._splitArray(subArray, restSplitDirections);
+    }
+    const beforeArray = array.slice(0, pivotIndex);
+    const afterArray = array.slice(pivotIndex);
+
+    return beforeArray.concat(
+      this._splitArray(afterArray, restSplitDirections),
+    );
+  }
+
+  _fits() {
+    const { lines: maxLines } = this.props;
+    const { height } = this.el.getBoundingClientRect();
+    const computedLines = Math.round(height / parseFloat(this._lineHeight));
+
+    if (process.env.NODE_ENV !== 'production' && computedLines <= 0) {
+      /* eslint-disable no-console */
+      console.warn(
+        `TruncateMarkup: number of currently rendered lines: ${computedLines}, not truncating...
+It may be caused by target element not being visible at the time of computation.`,
+      );
+      /* eslint-enable */
+    }
+
+    return maxLines >= computedLines;
+  }
+
+  render() {
+    return this.state.text;
+  }
+}

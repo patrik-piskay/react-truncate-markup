@@ -1,0 +1,6 @@
+/node_modules
+/es
+/lib
+/umd
+/demo/dist
+npm-debug.log*
