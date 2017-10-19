@@ -33,9 +33,9 @@ Installation
 ------------
 
 ```bash
-npm install --save react-truncate-markdown
+npm install --save react-truncate-markup
 # or
-yarn add react-truncate-markdown
+yarn add react-truncate-markup
 ```
 
 > This package also depends on `react` and `prop-types`. Please make sure you have those installed as well.
@@ -44,16 +44,16 @@ Importing:
 
 ```js
 // using ES6 modules
-import TruncateMarkup from 'react-truncate-markdown';
+import TruncateMarkup from 'react-truncate-markup';
 
 // using CommonJS modules
-const TruncateMarkup = require('react-truncate-markdown').default;
+const TruncateMarkup = require('react-truncate-markup').default;
 ```
 
 Or using script tags and globals:
 
 ```html
-<script src="https://unpkg.com/react-truncate-markdown"></script>
+<script src="https://unpkg.com/react-truncate-markup"></script>
 ```
 
 And accessing the global variable:
