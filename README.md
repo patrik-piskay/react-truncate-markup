@@ -53,7 +53,7 @@ const TruncateMarkup = require('react-truncate-markup').default;
 Or using script tags and globals:
 
 ```html
-<script src="https://unpkg.com/react-truncate-markup"></script>
+<script src="https://unpkg.com/react-truncate-markup/umd/react-truncate-markup.min.js"></script>
 ```
 
 And accessing the global variable:
