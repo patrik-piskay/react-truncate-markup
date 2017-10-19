@@ -1,5 +1,9 @@
 # React Truncate Markup
 
+[![Travis](https://img.shields.io/travis/parsable/react-truncate-markup.svg?style=flat-square)](https://travis-ci.org/parsable/react-truncate-markup)
+[![version](https://img.shields.io/npm/v/react-truncate-markup.svg?style=flat-square)](https://www.npmjs.com/package/react-truncate-markup)
+[![License](https://img.shields.io/npm/l/react-truncate-markup.svg?style=flat-square)](https://github.com/parsable/react-truncate-markup/blob/master/LICENSE.md)
+
 React component for truncating JSX markup.
 
 [Examples with code snippets](https://csb-4w2jrplym4-lpiemixyuh.now.sh/)  
