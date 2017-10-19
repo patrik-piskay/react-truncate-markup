@@ -1,14 +1,27 @@
 {
   "name": "react-truncate-markup",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "React component for truncating JSX markup",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
   "module": "es/index.js",
-  "files": ["es", "lib", "umd"],
-  "keywords": ["react", "truncate", "markup", "jsx", "ellipsis"],
+  "files": [
+    "es",
+    "lib",
+    "umd"
+  ],
+  "keywords": [
+    "react",
+    "truncate",
+    "markup",
+    "jsx",
+    "ellipsis"
+  ],
   "lint-staged": {
-    "*.js": ["prettier --write", "git add"]
+    "*.js": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "scripts": {
     "precommit": "lint-staged",
