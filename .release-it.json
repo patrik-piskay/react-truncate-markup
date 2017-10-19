@@ -1,0 +1,6 @@
+{
+  "buildCommand": "npm run build",
+  "github": {
+    "release": false
+  }
+}

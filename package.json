@@ -16,7 +16,8 @@
     "build": "nwb build-react-component",
     "clean": "nwb clean-module && nwb clean-demo",
     "test": "npm run lint",
-    "lint": "eslint src/**/*.js demo/src/*.js"
+    "lint": "eslint src/**/*.js demo/src/*.js",
+    "release": "release-it"
   },
   "peerDependencies": {
     "prop-types": ">=15",
