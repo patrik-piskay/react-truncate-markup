@@ -1,5 +1,48 @@
+html {
+  font-family: Helvetica, sans-serif, Arial;
+}
+
+body {
+  margin: 15px auto;
+  max-width: 900px;
+  padding: 0 15px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+}
+
+.block.margin {
+  margin-top: 20px;
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 300;
+}
+
+h2 {
+  font-size: 22px;
+  line-height: 24px;
+  margin: 45px 0 15px;
+  font-weight: 300;
+}
+
 .box {
-  background: #ccc;
-  border: 1px solid black;
+  border: 1px solid #a1a8a8;
   padding: 5px;
+}
+
+.eval {
+  background-color: #f8f8f8;
+  padding: 10px;
+}
+
+.code {
+  font-size: 14px;
+}
+
+pre {
+  margin: 0 !important;
 }

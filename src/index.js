@@ -143,7 +143,9 @@ export default class TruncateMarkup extends React.Component {
   }
 
   componentWillUnmount() {
-    this.resizeObserver.disconnect();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
 
     this._lineHeight = null;
     this._origText = null;
@@ -208,6 +210,10 @@ export default class TruncateMarkup extends React.Component {
         ...newRootEl,
         props: {
           ...newRootEl.props,
+          style: {
+            wordWrap: 'break-word',
+            ...newRootEl.props.style,
+          },
           children: newChildrenWithEllipsis,
         },
       },

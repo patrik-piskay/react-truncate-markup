@@ -39,6 +39,7 @@
     "lint-staged": "4.2.3",
     "nwb": "0.19.0",
     "prettier": "1.7.4",
+    "prismjs": "1.8.1",
     "prop-types": "15.6.0",
     "react": "^16.0.0",
     "react-dom": "^16.0.0",

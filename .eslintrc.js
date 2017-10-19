@@ -22,5 +22,8 @@ module.exports = {
     'react/prefer-stateless-function': 0,
     'react/jsx-filename-extension': 0,
     'react/no-array-index-key': 0,
+
+    'jsx-a11y/click-events-have-key-events': 0,
+    'jsx-a11y/no-static-element-interactions': 0,
   },
 };
