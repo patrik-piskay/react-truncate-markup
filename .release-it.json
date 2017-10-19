@@ -2,5 +2,11 @@
   "buildCommand": "npm run build",
   "github": {
     "release": false
+  },
+  "prompt": {
+    "src": {
+      "publish": true,
+      "release": false
+    }
   }
 }
