@@ -156,9 +156,7 @@ Numeric value for desired line height in pixels. Generally it will be auto-detec
 Contributing
 -----
 
-1. Fork and clone the repo
-2. `npm install` or `yarn` to install project's dependencies
-3. `npm start` to start the demo app to see what affect your changes have
+Read more about project setup and contributing in [CONTRIBUTING.md](https://github.com/parsable/react-truncate-markup/blob/master/CONTRIBUTING.md)
 
 License
 -----
