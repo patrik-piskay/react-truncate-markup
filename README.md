@@ -6,7 +6,7 @@
 
 React component for truncating JSX markup.
 
-[Examples with code snippets](https://csb-4w2jrplym4-lpiemixyuh.now.sh/)  
+[Examples with code snippets](https://csb-4w2jrplym4-aoxoycdsys.now.sh/)  
 [CodeSandbox demo](https://codesandbox.io/s/4w2jrplym4)
 
 Why?
