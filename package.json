@@ -4,6 +4,7 @@
   "description": "React component for truncating JSX markup",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
+  "types": "index.d.ts",
   "module": "es/index.js",
   "files": [
     "es",
