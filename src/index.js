@@ -8,6 +8,23 @@ const SPLIT = {
   RIGHT: false,
 };
 
+const toString = (node, string = '') => {
+  if (!node) {
+    return string;
+  } else if (typeof node === 'string') {
+    return string + node;
+  } else if (Array.isArray(node)) {
+    let newString = string;
+    node.forEach(child => {
+      newString = toString(child, newString);
+    });
+
+    return newString;
+  }
+
+  return toString(node.props.children, string);
+};
+
 const cloneWithChildren = (node, children, isRootEl) => ({
   ...node,
   props: {
@@ -43,19 +60,26 @@ export default class TruncateMarkup extends React.Component {
   };
 
   state = {
-    text: this._childrenElementWithRef(this.props.children),
+    text: this.childrenElementWithRef(this.props.children),
   };
 
+  lineHeight = null;
+  splitDirectionSeq = [];
+  shouldTruncate = true;
+  wasLastCharTested = false;
+  endFound = false;
+  latestThatFits = null;
+  origText = null;
+  clientWidth = null;
+
   componentDidMount() {
-    this._origText = this.state.text;
-    this._splitDirectionSeq = [];
-    this._shouldTruncate = true;
+    this.origText = this.state.text;
 
     // get the computed line-height of the parent element
     // it'll be used for determining whether the text fits the container or not
-    this._lineHeight = this.props.lineHeight || getLineHeight(this.el);
+    this.lineHeight = this.props.lineHeight || getLineHeight(this.el);
 
-    this._truncate();
+    this.truncate();
 
     /* Wrapper element resize handing */
     let initialRender = true;
@@ -66,13 +90,16 @@ export default class TruncateMarkup extends React.Component {
         initialRender = false;
       } else {
         // wrapper element has been resized, recalculating with the original text
+        this.shouldTruncate = false;
+        this.latestThatFits = null;
+
         this.setState(
           {
-            text: this._origText,
+            text: this.origText,
           },
           () => {
-            this._shouldTruncate = true;
-            this._truncate();
+            this.shouldTruncate = true;
+            this.truncate();
           },
         );
       }
@@ -82,63 +109,66 @@ export default class TruncateMarkup extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    this.shouldTruncate = false;
+    this.latestThatFits = null;
+
     this.setState(
       {
-        text: this._childrenElementWithRef(nextProps.children),
+        text: this.childrenElementWithRef(nextProps.children),
       },
       () => {
-        this._origText = this.state.text;
-        this._lineHeight = nextProps.lineHeight || getLineHeight(this.el);
-        this._shouldTruncate = true;
-        this._truncate();
+        this.origText = this.state.text;
+        this.lineHeight = nextProps.lineHeight || getLineHeight(this.el);
+        this.shouldTruncate = true;
+        this.truncate();
       },
     );
   }
 
   componentDidUpdate() {
-    if (this._shouldTruncate === false) {
+    if (this.shouldTruncate === false) {
       return;
     }
 
-    if (this._endFound) {
+    if (this.endFound) {
       // we've found the end where we cannot split the text further
       // that means we've already found the max subtree that fits the container
       // so we are rendering that
-      if (this.state.text !== this._latestThatFits) {
+      if (this.state.text !== this.latestThatFits) {
         /* eslint-disable react/no-did-update-set-state */
         this.setState({
-          text: this._latestThatFits,
+          text: this.latestThatFits,
         });
         /* eslint-enable */
-      } else if (this.el && this.el.clientWidth !== this._clientWidth) {
+      } else if (this.el && this.el.clientWidth !== this.clientWidth) {
         // edge case - scrollbar (dis?)appearing might mess up the container width
         // causing strings that would normally fit on X lines to suddenly take up X+1 lines
         // ugly fix - recalculate again
-        this._truncateOriginalText();
+        this.truncateOriginalText();
       }
 
       return;
     }
 
-    if (this._splitDirectionSeq.length) {
-      if (this._fits()) {
-        this._latestThatFits = this.state.text;
-        this._clientWidth = this.el.clientWidth;
+    if (this.splitDirectionSeq.length) {
+      if (this.fits()) {
+        this.latestThatFits = this.state.text;
+        this.clientWidth = this.el.clientWidth;
         // we've found a subtree that fits the container
         // but we need to check if we didn't cut too much of it off
         // so we are changing the last splitting decision from splitting and going left
         // to splitting and going right
-        this._splitDirectionSeq.splice(
-          this._splitDirectionSeq.length - 1,
+        this.splitDirectionSeq.splice(
+          this.splitDirectionSeq.length - 1,
           1,
           SPLIT.RIGHT,
           SPLIT.LEFT,
         );
       } else {
-        this._splitDirectionSeq.push(SPLIT.LEFT);
+        this.splitDirectionSeq.push(SPLIT.LEFT);
       }
 
-      this._tryToFit(this._origText, this._splitDirectionSeq);
+      this.tryToFit(this.origText, this.splitDirectionSeq);
     }
   }
 
@@ -147,36 +177,35 @@ export default class TruncateMarkup extends React.Component {
       this.resizeObserver.disconnect();
     }
 
-    this._lineHeight = null;
-    this._origText = null;
-    this._latestThatFits = null;
-    this._splitDirectionSeq = [];
+    this.lineHeight = null;
+    this.origText = null;
+    this.latestThatFits = null;
+    this.splitDirectionSeq = [];
   }
 
-  _truncate() {
-    if (this._fits()) {
+  truncate() {
+    if (this.fits()) {
       // the whole text fits on the first try, no need to do anything else
-      this._shouldTruncate = false;
+      this.shouldTruncate = false;
 
       return;
     }
 
-    this._latestThatFits = null;
-
-    this._truncateOriginalText();
+    this.truncateOriginalText();
   }
 
-  _childrenElementWithRef(children) {
+  childrenElementWithRef(children) {
     const child = React.Children.only(children);
 
     return React.cloneElement(child, { ref: el => (this.el = el) });
   }
 
-  _truncateOriginalText() {
-    this._endFound = false;
-    this._splitDirectionSeq = [SPLIT.LEFT];
+  truncateOriginalText() {
+    this.endFound = false;
+    this.splitDirectionSeq = [SPLIT.LEFT];
+    this.wasLastCharTested = false;
 
-    this._tryToFit(this._origText, this._splitDirectionSeq);
+    this.tryToFit(this.origText, this.splitDirectionSeq);
   }
 
   /**
@@ -185,13 +214,13 @@ export default class TruncateMarkup extends React.Component {
    * @param  {ReactElement} rootEl - the original children element
    * @param  {Array} splitDirections - list of SPLIT.RIGHT/LEFT instructions
    */
-  _tryToFit(rootEl, splitDirections) {
+  tryToFit(rootEl, splitDirections) {
     if (!rootEl.props.children) {
       // no markup in container
       return;
     }
 
-    const newRootEl = this._split(rootEl, splitDirections, /* isRootEl */ true);
+    const newRootEl = this.split(rootEl, splitDirections, /* isRootEl */ true);
 
     let ellipsis =
       typeof this.props.ellipsis === 'function'
@@ -207,6 +236,8 @@ export default class TruncateMarkup extends React.Component {
     const newChildrenWithEllipsis = Array.isArray(newChildren)
       ? [...newChildren, ellipsis]
       : [newChildren, ellipsis];
+    const shouldRenderEllipsis =
+      toString(newChildren) !== toString(this.origText);
 
     this.setState({
       text: {
@@ -217,7 +248,9 @@ export default class TruncateMarkup extends React.Component {
             wordWrap: 'break-word',
             ...newRootEl.props.style,
           },
-          children: newChildrenWithEllipsis,
+          children: shouldRenderEllipsis
+            ? newChildrenWithEllipsis
+            : newChildren,
         },
       },
     });
@@ -229,29 +262,34 @@ export default class TruncateMarkup extends React.Component {
    * @param  {Array} splitDirections - list of SPLIT.RIGHT/LEFT instructions
    * @return {null|string|Array|Object} - split JSX node
    */
-  _split(node, splitDirections, isRoot = false) {
+  split(node, splitDirections, isRoot = false) {
     if (!node) {
       return node;
     } else if (typeof node === 'string') {
-      return this._splitString(node, splitDirections);
+      return this.splitString(node, splitDirections);
     } else if (Array.isArray(node)) {
-      return this._splitArray(node, splitDirections);
+      return this.splitArray(node, splitDirections);
     }
 
-    const newChildren = this._split(node.props.children, splitDirections);
+    const newChildren = this.split(node.props.children, splitDirections);
 
     return cloneWithChildren(node, newChildren, isRoot);
   }
 
-  _splitString(string, splitDirections = []) {
+  splitString(string, splitDirections = []) {
     if (!splitDirections.length) {
       return string;
     }
 
     if (splitDirections.length && string.length === 1) {
-      // we are trying to split further but we have nowhere to go now
-      // that means we've already found the max subtree that fits the container
-      this._endFound = true;
+      if (this.wasLastCharTested) {
+        // we are trying to split further but we have nowhere to go now
+        // that means we've already found the max subtree that fits the container
+        this.endFound = true;
+      } else {
+        // TODO comment
+        this.wasLastCharTested = true;
+      }
 
       return string;
     }
@@ -262,15 +300,15 @@ export default class TruncateMarkup extends React.Component {
     if (splitDirection === SPLIT.LEFT) {
       const subString = string.substring(0, pivotIndex);
 
-      return this._splitString(subString, restSplitDirections);
+      return this.splitString(subString, restSplitDirections);
     }
     const beforeString = string.substring(0, pivotIndex);
     const afterString = string.substring(pivotIndex);
 
-    return beforeString + this._splitString(afterString, restSplitDirections);
+    return beforeString + this.splitString(afterString, restSplitDirections);
   }
 
-  _splitArray(array, splitDirections = []) {
+  splitArray(array, splitDirections = []) {
     if (!splitDirections.length) {
       return array;
     }
@@ -279,11 +317,11 @@ export default class TruncateMarkup extends React.Component {
       const [item] = array;
 
       if (typeof item === 'string') {
-        return [this._splitString(item, splitDirections)];
+        return [this.splitString(item, splitDirections)];
       }
       const { children } = item.props;
 
-      const newChildren = this._split(children, splitDirections);
+      const newChildren = this.split(children, splitDirections);
 
       return [cloneWithChildren(item, newChildren)];
     }
@@ -294,20 +332,18 @@ export default class TruncateMarkup extends React.Component {
     if (splitDirection === SPLIT.LEFT) {
       const subArray = array.slice(0, pivotIndex);
 
-      return this._splitArray(subArray, restSplitDirections);
+      return this.splitArray(subArray, restSplitDirections);
     }
     const beforeArray = array.slice(0, pivotIndex);
     const afterArray = array.slice(pivotIndex);
 
-    return beforeArray.concat(
-      this._splitArray(afterArray, restSplitDirections),
-    );
+    return beforeArray.concat(this.splitArray(afterArray, restSplitDirections));
   }
 
-  _fits() {
+  fits() {
     const { lines: maxLines } = this.props;
     const { height } = this.el.getBoundingClientRect();
-    const computedLines = Math.round(height / parseFloat(this._lineHeight));
+    const computedLines = Math.round(height / parseFloat(this.lineHeight));
 
     if (process.env.NODE_ENV !== 'production' && computedLines <= 0) {
       /* eslint-disable no-console */
