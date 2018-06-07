@@ -25,18 +25,26 @@ const toString = (node, string = '') => {
   return toString(node.props.children, string);
 };
 
-const cloneWithChildren = (node, children, isRootEl) => ({
+const cloneWithChildren = (node, children, isRootEl, level) => ({
   ...node,
   props: {
     ...node.props,
     style: {
       ...node.props.style,
-      ...(!isRootEl
+      ...(isRootEl
         ? {
-            display: (node.props.style || {}).display || 'inline',
+            // root element cannot be an inline element because of the line calculation
+            display: (node.props.style || {}).display || 'block',
           }
-        : {}),
+        : level === 2
+          ? {
+              // level 2 elements (direct children of the root element) need to be inline because of the ellipsis.
+              // if level 2 element was a block element, ellipsis would get rendered on a new line, breaking the max number of lines
+              display: (node.props.style || {}).display || 'inline-block',
+            }
+          : {}),
     },
+    level,
     children,
   },
 });
@@ -233,6 +241,20 @@ export default class TruncateMarkup extends React.Component {
     const newChildrenWithEllipsis = Array.isArray(newChildren)
       ? [...newChildren, ellipsis]
       : [newChildren, ellipsis];
+
+    // edge case tradeoff - on initial render it doesn't fit in the requested number of lines (1) so it starts truncating
+    // - because of truncating and the ellipsis position, div#lvl2 will have display set to 'inline-block',
+    //   causing the whole body to fit in 1 line again
+    // - if that happens, ellipsis is not needed anymore as the whole body is rendered
+    // - TODO: this could be fixed by checking for this exact case and handling it separately so it renders <div>foo {ellipsis}</div>
+    //
+    // Example:
+    // <TruncateMarkup lines={1}>
+    //   <div>
+    //     foo
+    //     <div id="lvl2">bar</div>
+    //   </div>
+    // </TruncateMarkup>
     const shouldRenderEllipsis =
       toString(newChildren) !== toString(this.origText);
 
@@ -259,18 +281,23 @@ export default class TruncateMarkup extends React.Component {
    * @param  {Array} splitDirections - list of SPLIT.RIGHT/LEFT instructions
    * @return {null|string|Array|Object} - split JSX node
    */
-  split(node, splitDirections, isRoot = false) {
+  split(node, splitDirections, isRoot = false, level = 1) {
     if (!node) {
       return node;
     } else if (typeof node === 'string') {
       return this.splitString(node, splitDirections);
     } else if (Array.isArray(node)) {
-      return this.splitArray(node, splitDirections);
+      return this.splitArray(node, splitDirections, level);
     }
 
-    const newChildren = this.split(node.props.children, splitDirections);
+    const newChildren = this.split(
+      node.props.children,
+      splitDirections,
+      /* isRoot */ false,
+      level + 1,
+    );
 
-    return cloneWithChildren(node, newChildren, isRoot);
+    return cloneWithChildren(node, newChildren, isRoot, level);
   }
 
   splitString(string, splitDirections = []) {
@@ -305,7 +332,7 @@ export default class TruncateMarkup extends React.Component {
     return beforeString + this.splitString(afterString, restSplitDirections);
   }
 
-  splitArray(array, splitDirections = []) {
+  splitArray(array, splitDirections = [], level) {
     if (!splitDirections.length) {
       return array;
     }
@@ -320,7 +347,7 @@ export default class TruncateMarkup extends React.Component {
 
       const newChildren = this.split(children, splitDirections);
 
-      return [cloneWithChildren(item, newChildren)];
+      return [cloneWithChildren(item, newChildren, /* isRoot */ false, level)];
     }
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
@@ -329,12 +356,14 @@ export default class TruncateMarkup extends React.Component {
     if (splitDirection === SPLIT.LEFT) {
       const subArray = array.slice(0, pivotIndex);
 
-      return this.splitArray(subArray, restSplitDirections);
+      return this.splitArray(subArray, restSplitDirections, level);
     }
     const beforeArray = array.slice(0, pivotIndex);
     const afterArray = array.slice(pivotIndex);
 
-    return beforeArray.concat(this.splitArray(afterArray, restSplitDirections));
+    return beforeArray.concat(
+      this.splitArray(afterArray, restSplitDirections, level),
+    );
   }
 
   fits() {
