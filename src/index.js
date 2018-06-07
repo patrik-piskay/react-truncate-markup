@@ -242,11 +242,11 @@ export default class TruncateMarkup extends React.Component {
       ? [...newChildren, ellipsis]
       : [newChildren, ellipsis];
 
-    // edge case tradeoff - on initial render it doesn't fit in the requested number of lines (1) so it starts truncating
+    // edge case tradeoff EC#1 - on initial render it doesn't fit in the requested number of lines (1) so it starts truncating
     // - because of truncating and the ellipsis position, div#lvl2 will have display set to 'inline-block',
     //   causing the whole body to fit in 1 line again
     // - if that happens, ellipsis is not needed anymore as the whole body is rendered
-    // - TODO: this could be fixed by checking for this exact case and handling it separately so it renders <div>foo {ellipsis}</div>
+    // - NOTE this could be fixed by checking for this exact case and handling it separately so it renders <div>foo {ellipsis}</div>
     //
     // Example:
     // <TruncateMarkup lines={1}>
@@ -306,13 +306,15 @@ export default class TruncateMarkup extends React.Component {
     }
 
     if (splitDirections.length && string.length === 1) {
-      if (this.wasLastCharTested) {
+      // allow for an extra render test with the current character included
+      // in most cases this variation was already tested, but some edge cases require this check
+      // NOTE could be removed once EC#1 is taken care of
+      if (!this.wasLastCharTested) {
+        this.wasLastCharTested = true;
+      } else {
         // we are trying to split further but we have nowhere to go now
         // that means we've already found the max subtree that fits the container
         this.endFound = true;
-      } else {
-        // TODO comment
-        this.wasLastCharTested = true;
       }
 
       return string;
