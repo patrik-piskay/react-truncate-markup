@@ -230,12 +230,15 @@ export default class TruncateMarkup extends React.Component {
 
     const newRootEl = this.split(rootEl, splitDirections, /* isRootEl */ true);
 
-    const ellipsis =
+    let ellipsis =
       typeof this.props.ellipsis === 'function'
         ? this.props.ellipsis(newRootEl)
-        : typeof this.props.ellipsis === 'object'
-          ? React.cloneElement(this.props.ellipsis, { key: 'ellipsis' })
-          : this.props.ellipsis;
+        : this.props.ellipsis;
+
+    ellipsis =
+      typeof ellipsis === 'object'
+        ? React.cloneElement(ellipsis, { key: 'ellipsis' })
+        : ellipsis;
 
     const newChildren = newRootEl.props.children;
     const newChildrenWithEllipsis = Array.isArray(newChildren)
