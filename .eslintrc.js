@@ -4,6 +4,7 @@ module.exports = {
   env: {
     browser: true,
     es6: true,
+    jest: true,
   },
   settings: {
     ecmascript: 6,
@@ -16,7 +17,7 @@ module.exports = {
     'no-nested-ternary': 0,
     'import/no-extraneous-dependencies': [
       2,
-      { devDependencies: ['demo/**/*.js'] },
+      { devDependencies: ['demo/**/*.js', '__tests__/**/*.js'] },
     ],
 
     'react/prefer-stateless-function': 0,
