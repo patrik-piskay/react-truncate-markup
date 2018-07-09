@@ -1,10 +1,11 @@
-sudo: false
-language: node_js
-node_js: '8'
-cache:
-  yarn: true
-  directories:
-    - node_modules
+sudo: required
+services:
+  - docker
+before_install:
+  - docker build -t react-truncate-markup .
+  - docker images
+script:
+  - docker run -t react-truncate-markup
 notifications:
   email: false
 branches:
