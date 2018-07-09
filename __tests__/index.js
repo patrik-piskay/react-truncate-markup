@@ -31,7 +31,9 @@ describe('Screenshot tests', () => {
   });
 
   beforeEach(async () => {
-    browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+    browser = await puppeteer.launch({
+      args: ['--no-sandbox'],
+    });
     page = await browser.newPage();
     page.setViewport({ width: 800, height: 600 });
   });
