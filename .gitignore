@@ -1,8 +1,10 @@
-/node_modules
+node_modules
 /es
 /lib
 /umd
 /demo/dist
+public
 npm-debug.log*
 package-lock.json
-yarn.lock
+yarn-error.log
+.cache
