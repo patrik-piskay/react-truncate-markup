@@ -9,4 +9,4 @@ WORKDIR /app
 RUN yarn
 RUN cd __tests__/app && yarn
 
-CMD cd __tests__/app && yarn build && cd ../.. && yarn test
+CMD cd __tests__/app && yarn build && cd ../.. && yarn lint && yarn jest
