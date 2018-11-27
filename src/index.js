@@ -44,7 +44,6 @@ const cloneWithChildren = (node, children, isRootEl, level) => ({
             }
           : {}),
     },
-    level,
     children,
   },
 });
