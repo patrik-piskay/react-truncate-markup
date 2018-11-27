@@ -44,7 +44,7 @@ const cloneWithChildren = (node, children, isRootEl, level) => ({
             }
           : {}),
     },
-    level,
+    'data-level': level,
     children,
   },
 });
