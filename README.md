@@ -85,7 +85,7 @@ Usage
 ```
 
 > #### :warning: Warning
-Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).
+> Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).
 
 Props
 -----
