@@ -4,6 +4,8 @@ services:
 before_install:
   - docker build -t react-truncate-markup .
   - docker images
+install:
+  - yarn
 script:
   - yarn test:ci
 notifications:
