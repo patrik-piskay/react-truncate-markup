@@ -48,6 +48,36 @@ const cloneWithChildren = (node, children, isRootEl, level) => ({
   },
 });
 
+const validateTree = node => {
+  if (typeof node === 'string') {
+    return true;
+  } else if (typeof node.type === 'function') {
+    if (process.env.NODE_ENV !== 'production') {
+      /* eslint-disable no-console */
+      console.error(
+        `ReactTruncateMarkup tried to render <${node.type
+          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`,
+      );
+      /* eslint-enable */
+    }
+
+    return false;
+  }
+
+  if (node.props.children) {
+    if (Array.isArray(node.props.children)) {
+      return node.props.children.reduce(
+        (isValid, child) => isValid && validateTree(child),
+        true,
+      );
+    }
+
+    return validateTree(node.props.children);
+  }
+
+  return true;
+};
+
 export default class TruncateMarkup extends React.Component {
   static propTypes = {
     children: PropTypes.element.isRequired,
@@ -58,18 +88,21 @@ export default class TruncateMarkup extends React.Component {
       PropTypes.func,
     ]),
     lineHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    onAfterTruncate: PropTypes.func,
   };
 
   static defaultProps = {
     lines: 1,
     ellipsis: '...',
     lineHeight: '',
+    onAfterTruncate: () => {},
   };
 
   state = {
     text: this.childrenElementWithRef(this.props.children),
   };
 
+  isValid = validateTree(this.props.children);
   lineHeight = null;
   splitDirectionSeq = [];
   shouldTruncate = true;
@@ -80,6 +113,10 @@ export default class TruncateMarkup extends React.Component {
   clientWidth = null;
 
   componentDidMount() {
+    if (!this.isValid) {
+      return;
+    }
+
     this.origText = this.state.text;
 
     // get the computed line-height of the parent element
@@ -88,52 +125,39 @@ export default class TruncateMarkup extends React.Component {
 
     this.truncate();
 
-    /* Wrapper element resize handing */
-    let initialRender = true;
-
-    this.resizeObserver = new ResizeObserver(() => {
-      if (initialRender) {
-        // ResizeObserer cb is called on initial render too so we are skipping here
-        initialRender = false;
-      } else {
-        // wrapper element has been resized, recalculating with the original text
-        this.shouldTruncate = false;
-        this.latestThatFits = null;
-
-        this.setState(
-          {
-            text: this.origText,
-          },
-          () => {
-            this.shouldTruncate = true;
-            this.truncate();
-          },
-        );
-      }
-    });
-
-    this.resizeObserver.observe(this.el);
+    this.handleResize();
   }
 
   componentWillReceiveProps(nextProps) {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
     this.shouldTruncate = false;
     this.latestThatFits = null;
+    this.isValid = validateTree(nextProps.children);
 
     this.setState(
       {
         text: this.childrenElementWithRef(nextProps.children),
       },
       () => {
+        if (!this.isValid) {
+          return;
+        }
+
         this.origText = this.state.text;
         this.lineHeight = nextProps.lineHeight || getLineHeight(this.el);
         this.shouldTruncate = true;
         this.truncate();
+
+        this.handleResize();
       },
     );
   }
 
   componentDidUpdate() {
-    if (this.shouldTruncate === false) {
+    if (this.shouldTruncate === false || this.isValid === false) {
       return;
     }
 
@@ -146,13 +170,19 @@ export default class TruncateMarkup extends React.Component {
         this.setState({
           text: this.latestThatFits,
         });
+
+        return;
         /* eslint-enable */
       } else if (this.el && this.el.clientWidth !== this.clientWidth) {
         // edge case - scrollbar (dis?)appearing might mess up the container width
         // causing strings that would normally fit on X lines to suddenly take up X+1 lines
         // ugly fix - recalculate again
         this.truncateOriginalText();
+
+        return;
       }
+
+      this.props.onAfterTruncate(/* wasTruncated */ true);
 
       return;
     }
@@ -190,10 +220,39 @@ export default class TruncateMarkup extends React.Component {
     this.splitDirectionSeq = [];
   }
 
+  handleResize = () => {
+    /* Wrapper element resize handing */
+    let initialRender = true;
+
+    this.resizeObserver = new ResizeObserver(() => {
+      if (initialRender) {
+        // ResizeObserer cb is called on initial render too so we are skipping here
+        initialRender = false;
+      } else {
+        // wrapper element has been resized, recalculating with the original text
+        this.shouldTruncate = false;
+        this.latestThatFits = null;
+
+        this.setState(
+          {
+            text: this.origText,
+          },
+          () => {
+            this.shouldTruncate = true;
+            this.truncate();
+          },
+        );
+      }
+    });
+
+    this.resizeObserver.observe(this.el);
+  };
+
   truncate() {
     if (this.fits()) {
       // the whole text fits on the first try, no need to do anything else
       this.shouldTruncate = false;
+      this.props.onAfterTruncate(/* wasTruncated */ false);
 
       return;
     }
@@ -349,7 +408,12 @@ export default class TruncateMarkup extends React.Component {
       }
       const { children } = item.props;
 
-      const newChildren = this.split(children, splitDirections);
+      const newChildren = this.split(
+        children,
+        splitDirections,
+        /* isRoot */ false,
+        level + 1,
+      );
 
       return [cloneWithChildren(item, newChildren, /* isRoot */ false, level)];
     }
@@ -378,8 +442,8 @@ export default class TruncateMarkup extends React.Component {
     if (process.env.NODE_ENV !== 'production' && computedLines <= 0) {
       /* eslint-disable no-console */
       console.warn(
-        `TruncateMarkup: number of currently rendered lines: ${computedLines}, not truncating...
-It may be caused by target element not being visible at the time of computation.`,
+        `ReactTruncateMarkup: number of currently rendered lines: ${computedLines}, not truncating...
+  It may be caused by target element not being visible at the time of computation.`,
       );
       /* eslint-enable */
     }
