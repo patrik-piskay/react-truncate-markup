@@ -84,6 +84,9 @@ Usage
 </div>
 ```
 
+> #### :warning: Warning
+Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).
+
 Props
 -----
 
@@ -152,6 +155,12 @@ const wordsLeftEllipsis = (rootEl) => {
 > default value: auto-detected
 
 Numeric value for desired line height in pixels. Generally it will be auto-detected but it can be useful in some cases when the auto-detected value needs to be overridden.
+
+### `onAfterTruncate`
+
+> function(wasTruncated: bool) | optional
+
+A callback that gets called after truncation. It receives a bool value - `true` if the input markup was truncated, `false` when no truncation was needed.
 
 Contributing
 -----

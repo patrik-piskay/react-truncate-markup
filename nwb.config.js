@@ -9,4 +9,7 @@ module.exports = {
       },
     },
   },
+  karma: {
+    testFiles: '__tests__/browser.js',
+  },
 };
