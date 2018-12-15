@@ -112,6 +112,17 @@ export default class TruncateMarkup extends React.Component {
   origText = null;
   clientWidth = null;
 
+  dimensions = {
+    bottom: 0,
+    height: 0,
+    left: 0,
+    right: 0,
+    top: 0,
+    width: 0,
+    x: 0,
+    y: 0,
+  };
+
   componentDidMount() {
     if (!this.isValid) {
       return;
@@ -224,24 +235,39 @@ export default class TruncateMarkup extends React.Component {
     /* Wrapper element resize handing */
     let initialRender = true;
 
-    this.resizeObserver = new ResizeObserver(() => {
-      if (initialRender) {
-        // ResizeObserer cb is called on initial render too so we are skipping here
-        initialRender = false;
-      } else {
-        // wrapper element has been resized, recalculating with the original text
-        this.shouldTruncate = false;
-        this.latestThatFits = null;
+    this.resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const dimensions = entry.contentRect;
+        if (
+          (this.dimensions.width === dimensions.width &&
+            this.dimensions.height === dimensions.height) ||
+          (!dimensions.left &&
+            !dimensions.top &&
+            !dimensions.width &&
+            !dimensions.height)
+        ) {
+          // skipping truncateMarkup because there's no real change
+        } else {
+          this.dimensions = dimensions;
+          if (initialRender) {
+            // ResizeObserer cb is called on initial render too so we are skipping here
+            initialRender = false;
+          } else {
+            // wrapper element has been resized, recalculating with the original text
+            this.shouldTruncate = false;
+            this.latestThatFits = null;
 
-        this.setState(
-          {
-            text: this.origText,
-          },
-          () => {
-            this.shouldTruncate = true;
-            this.truncate();
-          },
-        );
+            this.setState(
+              {
+                text: this.origText,
+              },
+              function() {
+                this.shouldTruncate = true;
+                this.truncate();
+              },
+            );
+          }
+        }
       }
     });
 
