@@ -236,7 +236,7 @@ export default class TruncateMarkup extends React.Component {
     let initialRender = true;
 
     this.resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
+      entries.forEach(entry => {
         const dimensions = entry.contentRect;
         if (
           (this.dimensions.width === dimensions.width &&
@@ -268,7 +268,7 @@ export default class TruncateMarkup extends React.Component {
             );
           }
         }
-      }
+      });
     });
 
     this.resizeObserver.observe(this.el);
