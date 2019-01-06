@@ -114,7 +114,7 @@ describe('TruncateMarkup', () => {
       expect(onAfterTruncateCb.calls[0].arguments).toEqual([true]);
     });
 
-    it('should be called after updates', () => {
+    it('should not be called after update', () => {
       const onAfterTruncateCb = expect.createSpy();
       const onMount = expect.createSpy();
       const onUpdate = expect.createSpy();
@@ -145,17 +145,13 @@ describe('TruncateMarkup', () => {
 
       renderIntoDocument(<TestCase text={shortText} />);
       renderIntoDocument(<TestCase text={longText} />);
-      renderIntoDocument(<TestCase text={shortText} />);
 
-      expect(onAfterTruncateCb.calls.length).toBe(3);
+      expect(onAfterTruncateCb.calls.length).toBe(1);
       expect(onAfterTruncateCb.calls[0].arguments).toEqual([false]);
-      expect(onAfterTruncateCb.calls[1].arguments).toEqual([true]);
-      expect(onAfterTruncateCb.calls[2].arguments).toEqual([false]);
 
       expect(onMount.calls.length).toBe(1);
-      expect(onUpdate.calls.length).toBe(2);
+      expect(onUpdate.calls.length).toBe(1);
       expect(onUpdate.calls[0].arguments).toEqual([longText]);
-      expect(onUpdate.calls[1].arguments).toEqual([shortText]);
     });
   });
 });
