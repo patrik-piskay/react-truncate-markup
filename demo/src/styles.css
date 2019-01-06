@@ -3,8 +3,46 @@ html {
 }
 
 body {
-  margin: 15px auto;
-  max-width: 900px;
+  max-width: 1200px;
+  margin: 0;
+  padding: 0;
+}
+
+.site {
+  display: flex;
+}
+
+.side {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 230px;
+  padding-left: 10px;
+  background-color: #eee;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.side .title {
+  color: #525252;
+  font-weight: bold;
+  margin-top: 20px;
+  text-transform: uppercase;
+}
+.side .links {
+  padding-left: 10px;
+}
+.side a {
+  display: block;
+  color: black;
+  text-decoration: none;
+}
+.side a:hover {
+  text-decoration: underline;
+}
+
+.main {
+  flex: 1;
+  margin: 15px 0 15px 270px;
   padding: 0 15px;
 }
 
@@ -25,7 +63,8 @@ h1 {
 h2 {
   font-size: 22px;
   line-height: 24px;
-  margin: 45px 0 15px;
+  margin: 25px 0 15px;
+  padding-top: 20px;
   font-weight: 300;
 }
 

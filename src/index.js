@@ -111,6 +111,7 @@ export default class TruncateMarkup extends React.Component {
   latestThatFits = null;
   origText = null;
   clientWidth = null;
+  onAfterTruncateCalled = false;
 
   componentDidMount() {
     if (!this.isValid) {
@@ -182,7 +183,7 @@ export default class TruncateMarkup extends React.Component {
         return;
       }
 
-      this.props.onAfterTruncate(/* wasTruncated */ true);
+      this.onAfterTruncate(/* wasTruncated */ true);
 
       return;
     }
@@ -220,6 +221,13 @@ export default class TruncateMarkup extends React.Component {
     this.splitDirectionSeq = [];
   }
 
+  onAfterTruncate = wasTruncated => {
+    if (!this.onAfterTruncateCalled) {
+      this.onAfterTruncateCalled = true;
+      this.props.onAfterTruncate(wasTruncated);
+    }
+  };
+
   handleResize = () => {
     /* Wrapper element resize handing */
     let initialRender = true;
@@ -239,6 +247,7 @@ export default class TruncateMarkup extends React.Component {
           },
           () => {
             this.shouldTruncate = true;
+            this.onAfterTruncateCalled = false;
             this.truncate();
           },
         );
@@ -252,7 +261,7 @@ export default class TruncateMarkup extends React.Component {
     if (this.fits()) {
       // the whole text fits on the first try, no need to do anything else
       this.shouldTruncate = false;
-      this.props.onAfterTruncate(/* wasTruncated */ false);
+      this.onAfterTruncate(/* wasTruncated */ false);
 
       return;
     }
