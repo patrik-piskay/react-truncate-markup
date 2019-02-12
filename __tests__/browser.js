@@ -19,6 +19,7 @@ describe('TruncateMarkup', () => {
     document.documentElement.appendChild(div);
 
     expect.spyOn(console, 'error');
+    expect.spyOn(console, 'warn');
   });
 
   afterEach(() => {
@@ -80,7 +81,35 @@ describe('TruncateMarkup', () => {
     });
   });
 
-  describe('onTruncate callback', () => {
+  describe('Warnings for tokenize prop', () => {
+    it('should not warn when using a proper value for tokenize prop', () => {
+      renderIntoDocument(
+        <TruncateMarkup tokenize="words">
+          <div>
+            <span>Some text</span>
+            <span>More text</span>
+          </div>
+        </TruncateMarkup>,
+      );
+
+      expect(console.warn).toNotHaveBeenCalled();
+    });
+
+    it('should warn when using unknown value for tokenize prop', () => {
+      renderIntoDocument(
+        <TruncateMarkup tokenize="unknown option">
+          <div>
+            <span>Some text</span>
+            <span>More text</span>
+          </div>
+        </TruncateMarkup>,
+      );
+
+      expect(console.warn).toHaveBeenCalled();
+    });
+  });
+
+  describe('onAfterTruncate callback', () => {
     it('should be called with wasTruncated = false once', () => {
       const onTruncateCb = expect.createSpy();
 

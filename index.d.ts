@@ -4,6 +4,7 @@ export interface TruncateProps {
   lines?: number;
   ellipsis?: React.ReactNode | ((element: React.ReactNode) => React.ReactNode);
   lineHeight?: number | string;
+  tokenize?: string;
   onTruncate?: (wasTruncated: boolean) => any;
 }
 
