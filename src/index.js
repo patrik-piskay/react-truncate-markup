@@ -391,13 +391,11 @@ export default class TruncateMarkup extends React.Component {
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
     const pivotIndex = Math.ceil(string.length / 2);
+    const beforeString = string.substring(0, pivotIndex);
 
     if (splitDirection === SPLIT.LEFT) {
-      const subString = string.substring(0, pivotIndex);
-
-      return this.splitString(subString, restSplitDirections);
+      return this.splitString(beforeString, restSplitDirections);
     }
-    const beforeString = string.substring(0, pivotIndex);
     const afterString = string.substring(pivotIndex);
 
     return beforeString + this.splitString(afterString, restSplitDirections);
@@ -428,13 +426,11 @@ export default class TruncateMarkup extends React.Component {
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
     const pivotIndex = Math.ceil(array.length / 2);
+    const beforeArray = array.slice(0, pivotIndex);
 
     if (splitDirection === SPLIT.LEFT) {
-      const subArray = array.slice(0, pivotIndex);
-
-      return this.splitArray(subArray, restSplitDirections, level);
+      return this.splitArray(beforeArray, restSplitDirections, level);
     }
-    const beforeArray = array.slice(0, pivotIndex);
     const afterArray = array.slice(pivotIndex);
 
     return beforeArray.concat(
