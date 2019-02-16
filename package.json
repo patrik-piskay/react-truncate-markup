@@ -27,7 +27,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "lint-staged": {
-    "*.js": [
+    "*.{js,ts}": [
       "prettier --write",
       "git add"
     ]
