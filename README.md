@@ -155,15 +155,15 @@ const wordsLeftEllipsis = (rootEl) => {
 
 Numeric value for desired line height in pixels. Generally it will be auto-detected but it can be useful in some cases when the auto-detected value needs to be overridden.
 
-### `onAfterTruncate`
+### `onTruncate`
 
 > function(wasTruncated: bool) | optional
 
 A callback that gets called after truncation. It receives a bool value - `true` if the input markup was truncated, `false` when no truncation was needed.
 
-> _Note_: To prevent infinite loops, _onAfterTruncate_ callback gets called only after the initial run (on mount), any subsequent props/children updates will trigger a recomputation, but _onAfterTruncate_ won't get called for these updates.
+> _Note_: To prevent infinite loops, _onTruncate_ callback gets called only after the initial run (on mount), any subsequent props/children updates will trigger a recomputation, but _onTruncate_ won't get called for these updates.
 >
-> If you, however, wish to have _onAfterTruncate_ called after some update, [change the `key` prop](https://reactjs.org/docs/reconciliation.html#keys) on the `<TruncateMarkup />` component - it will make React to remount the component, instead of updating it.
+> If you, however, wish to have _onTruncate_ called after some update, [change the `key` prop](https://reactjs.org/docs/reconciliation.html#keys) on the `<TruncateMarkup />` component - it will make React to remount the component, instead of updating it.
 
 ## Contributing
 

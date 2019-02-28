@@ -47,7 +47,7 @@ const rolesLeftEllipsis = node => {
 };
 
 class Demo extends Component {
-  state = { shouldTruncate: true, onAfterTruncateCalledCount: 0 };
+  state = { shouldTruncate: true, onTruncateCalledCount: 0 };
 
   toggleTruncate = () => {
     this.setState(state => ({ shouldTruncate: !state.shouldTruncate }));
@@ -75,7 +75,7 @@ class Demo extends Component {
             <a href="#ellipsis-callback">ellipsis callback</a>
             <a href="#more-markup">more markup</a>
             <a href="#resizable-box">resizable box</a>
-            <a href="#onAfterTruncate-callback">onAfterTruncate callback</a>
+            <a href="#onTruncate-callback">onTruncate callback</a>
           </div>
         </div>
         <div className="main">
@@ -486,7 +486,7 @@ const wordCountEllipsis = node => {
             </div>
           </div>
 
-          <h2 id="onAfterTruncate-callback">onAfterTruncate callback</h2>
+          <h2 id="onTruncate-callback">onTruncate callback</h2>
 
           <div className="block">
             <div className="eval">
@@ -499,10 +499,9 @@ const wordCountEllipsis = node => {
               >
                 <TruncateMarkup
                   lines={1}
-                  onAfterTruncate={wasTruncated => {
+                  onTruncate={wasTruncated => {
                     this.setState(state => ({
-                      onAfterTruncateCalledCount:
-                        state.onAfterTruncateCalledCount + 1,
+                      onTruncateCalledCount: state.onTruncateCalledCount + 1,
                       lastWasTruncated: wasTruncated,
                     }));
                   }}
@@ -514,9 +513,9 @@ const wordCountEllipsis = node => {
                 </TruncateMarkup>
               </ResizableBox>
               <div>
-                onAfterTruncate called:{' '}
+                onTruncate called:{' '}
                 <b>
-                  {this.state.onAfterTruncateCalledCount}x<b />
+                  {this.state.onTruncateCalledCount}x<b />
                 </b>
               </div>
               {this.state.lastWasTruncated !== undefined && (
@@ -537,10 +536,10 @@ const wordCountEllipsis = node => {
 
 <TruncateMarkup
   lines={1}
-  onAfterTruncate={wasTruncated => {
+  onTruncate={wasTruncated => {
     this.setState(state => ({
-      onAfterTruncateCalledCount:
-        state.onAfterTruncateCalledCount + 1,
+      onTruncateCalledCount:
+        state.onTruncateCalledCount + 1,
       lastWasTruncated: wasTruncated,
     }));
   }}
@@ -552,7 +551,7 @@ const wordCountEllipsis = node => {
 </TruncateMarkup>
 
 <div>
-  onAfterTruncate called: {this.state.onAfterTruncateCalledCount}x
+  onTruncate called: {this.state.onTruncateCalledCount}x
   Did truncate? {this.state.lastWasTruncated ? 'Yes' : 'No'}
 </div>
 `,
