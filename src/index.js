@@ -88,14 +88,22 @@ export default class TruncateMarkup extends React.Component {
       PropTypes.func,
     ]),
     lineHeight: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    onAfterTruncate: PropTypes.func,
+    onTruncate: PropTypes.func,
+    // eslint-disable-next-line
+    onAfterTruncate: (props, propName, componentName) => {
+      if (props[propName]) {
+        return new Error(
+          `${componentName}: Setting \`onAfterTruncate\` prop is deprecated, use \`onTruncate\` instead.`,
+        );
+      }
+    },
   };
 
   static defaultProps = {
     lines: 1,
     ellipsis: '...',
     lineHeight: '',
-    onAfterTruncate: () => {},
+    onTruncate: () => {},
   };
 
   state = {
@@ -111,7 +119,7 @@ export default class TruncateMarkup extends React.Component {
   latestThatFits = null;
   origText = null;
   clientWidth = null;
-  onAfterTruncateCalled = false;
+  onTruncateCalled = false;
 
   componentDidMount() {
     if (!this.isValid) {
@@ -183,7 +191,7 @@ export default class TruncateMarkup extends React.Component {
         return;
       }
 
-      this.onAfterTruncate(/* wasTruncated */ true);
+      this.onTruncate(/* wasTruncated */ true);
 
       return;
     }
@@ -221,10 +229,10 @@ export default class TruncateMarkup extends React.Component {
     this.splitDirectionSeq = [];
   }
 
-  onAfterTruncate = wasTruncated => {
-    if (!this.onAfterTruncateCalled) {
-      this.onAfterTruncateCalled = true;
-      this.props.onAfterTruncate(wasTruncated);
+  onTruncate = wasTruncated => {
+    if (!this.onTruncateCalled) {
+      this.onTruncateCalled = true;
+      this.props.onTruncate(wasTruncated);
     }
   };
 
@@ -247,7 +255,7 @@ export default class TruncateMarkup extends React.Component {
           },
           () => {
             this.shouldTruncate = true;
-            this.onAfterTruncateCalled = false;
+            this.onTruncateCalled = false;
             this.truncate();
           },
         );
@@ -261,7 +269,7 @@ export default class TruncateMarkup extends React.Component {
     if (this.fits()) {
       // the whole text fits on the first try, no need to do anything else
       this.shouldTruncate = false;
-      this.onAfterTruncate(/* wasTruncated */ false);
+      this.onTruncate(/* wasTruncated */ false);
 
       return;
     }

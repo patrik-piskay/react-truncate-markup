@@ -80,24 +80,24 @@ describe('TruncateMarkup', () => {
     });
   });
 
-  describe('onAfterTruncate callback', () => {
+  describe('onTruncate callback', () => {
     it('should be called with wasTruncated = false once', () => {
-      const onAfterTruncateCb = expect.createSpy();
+      const onTruncateCb = expect.createSpy();
 
       renderIntoDocument(
-        <TruncateMarkup onAfterTruncate={onAfterTruncateCb}>
+        <TruncateMarkup onTruncate={onTruncateCb}>
           <div>
             <span>Some text</span>
           </div>
         </TruncateMarkup>,
       );
 
-      expect(onAfterTruncateCb.calls.length).toBe(1);
-      expect(onAfterTruncateCb.calls[0].arguments).toEqual([false]);
+      expect(onTruncateCb.calls.length).toBe(1);
+      expect(onTruncateCb.calls[0].arguments).toEqual([false]);
     });
 
     it('should be called with wasTruncated = true once', () => {
-      const onAfterTruncateCb = expect.createSpy();
+      const onTruncateCb = expect.createSpy();
 
       const longText =
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ' +
@@ -105,17 +105,17 @@ describe('TruncateMarkup', () => {
         'laboris nisi ut aliquip ex ea commodo consequat.';
 
       renderIntoDocument(
-        <TruncateMarkup onAfterTruncate={onAfterTruncateCb}>
+        <TruncateMarkup onTruncate={onTruncateCb}>
           <div style={{ width: '200px' }}>{longText}</div>
         </TruncateMarkup>,
       );
 
-      expect(onAfterTruncateCb.calls.length).toBe(1);
-      expect(onAfterTruncateCb.calls[0].arguments).toEqual([true]);
+      expect(onTruncateCb.calls.length).toBe(1);
+      expect(onTruncateCb.calls[0].arguments).toEqual([true]);
     });
 
     it('should not be called after update', () => {
-      const onAfterTruncateCb = expect.createSpy();
+      const onTruncateCb = expect.createSpy();
       const onMount = expect.createSpy();
       const onUpdate = expect.createSpy();
 
@@ -136,7 +136,7 @@ describe('TruncateMarkup', () => {
 
         render() {
           return (
-            <TruncateMarkup onAfterTruncate={onAfterTruncateCb}>
+            <TruncateMarkup onTruncate={onTruncateCb}>
               <div style={{ width: '200px' }}>{this.props.text}</div>
             </TruncateMarkup>
           );
@@ -146,8 +146,8 @@ describe('TruncateMarkup', () => {
       renderIntoDocument(<TestCase text={shortText} />);
       renderIntoDocument(<TestCase text={longText} />);
 
-      expect(onAfterTruncateCb.calls.length).toBe(1);
-      expect(onAfterTruncateCb.calls[0].arguments).toEqual([false]);
+      expect(onTruncateCb.calls.length).toBe(1);
+      expect(onTruncateCb.calls[0].arguments).toEqual([false]);
 
       expect(onMount.calls.length).toBe(1);
       expect(onUpdate.calls.length).toBe(1);
