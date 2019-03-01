@@ -118,7 +118,6 @@ export default class TruncateMarkup extends React.Component {
   endFound = false;
   latestThatFits = null;
   origText = null;
-  clientWidth = null;
   onTruncateCalled = false;
 
   componentDidMount() {
@@ -182,13 +181,6 @@ export default class TruncateMarkup extends React.Component {
 
         return;
         /* eslint-enable */
-      } else if (this.el && this.el.clientWidth !== this.clientWidth) {
-        // edge case - scrollbar (dis?)appearing might mess up the container width
-        // causing strings that would normally fit on X lines to suddenly take up X+1 lines
-        // ugly fix - recalculate again
-        this.truncateOriginalText();
-
-        return;
       }
 
       this.onTruncate(/* wasTruncated */ true);
@@ -199,7 +191,6 @@ export default class TruncateMarkup extends React.Component {
     if (this.splitDirectionSeq.length) {
       if (this.fits()) {
         this.latestThatFits = this.state.text;
-        this.clientWidth = this.el.clientWidth;
         // we've found a subtree that fits the container
         // but we need to check if we didn't cut too much of it off
         // so we are changing the last splitting decision from splitting and going left
