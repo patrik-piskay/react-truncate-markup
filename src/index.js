@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import getLineHeight from 'line-height';
 import ResizeObserver from 'resize-observer-polyfill';
+import TOKENIZE_POLICY from './tokenize-rules';
 
 const SPLIT = {
   LEFT: true,
@@ -23,17 +24,6 @@ const toString = (node, string = '') => {
   }
 
   return toString(node.props.children, string);
-};
-
-const TOKENIZE_POLICY = {
-  characters: {
-    tokenizeString: null,
-    isAtomic: str => str.length <= 1,
-  },
-  words: {
-    tokenizeString: str => str.match(/((?:^\s*)?\S+\s*)/g),
-    isAtomic: str => /^\s*\S*\s*$/.test(str),
-  },
 };
 
 const getTokenizePolicyByProp = tokenize => {

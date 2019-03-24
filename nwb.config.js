@@ -10,6 +10,6 @@ module.exports = {
     },
   },
   karma: {
-    testFiles: '__tests__/browser.js',
+    testFiles: ['__tests__/browser.js', '__tests__/utils.js'],
   },
 };
