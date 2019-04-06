@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import getLineHeight from 'line-height';
 import ResizeObserver from 'resize-observer-polyfill';
+import TOKENIZE_POLICY from './tokenize-rules';
 
 const SPLIT = {
   LEFT: true,
@@ -23,6 +24,19 @@ const toString = (node, string = '') => {
   }
 
   return toString(node.props.children, string);
+};
+
+const getTokenizePolicyByProp = tokenize => {
+  if (process.env.NODE_ENV !== 'production' && !TOKENIZE_POLICY[tokenize]) {
+    /* eslint-disable no-console */
+    console.warn(
+      `ReactTruncateMarkup: Unknown option for prop 'tokenize': '${tokenize}'.
+      Option 'characters' will be used instead.`,
+    );
+    /* eslint-enable */
+  }
+
+  return TOKENIZE_POLICY[tokenize] || TOKENIZE_POLICY.characters;
 };
 
 const cloneWithChildren = (node, children, isRootEl, level) => ({
@@ -97,6 +111,7 @@ export default class TruncateMarkup extends React.Component {
         );
       }
     },
+    tokenize: PropTypes.oneOf(['characters', 'words']),
   };
 
   static defaultProps = {
@@ -104,6 +119,7 @@ export default class TruncateMarkup extends React.Component {
     ellipsis: '...',
     lineHeight: '',
     onTruncate: () => {},
+    tokenize: 'characters',
   };
 
   state = {
@@ -119,6 +135,7 @@ export default class TruncateMarkup extends React.Component {
   latestThatFits = null;
   origText = null;
   onTruncateCalled = false;
+  policy = null;
 
   componentDidMount() {
     if (!this.isValid) {
@@ -130,7 +147,7 @@ export default class TruncateMarkup extends React.Component {
     // get the computed line-height of the parent element
     // it'll be used for determining whether the text fits the container or not
     this.lineHeight = this.props.lineHeight || getLineHeight(this.el);
-
+    this.policy = getTokenizePolicyByProp(this.props.tokenize);
     this.truncate();
 
     this.handleResize();
@@ -140,7 +157,7 @@ export default class TruncateMarkup extends React.Component {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
-
+    this.policy = getTokenizePolicyByProp(nextProps.tokenize);
     this.shouldTruncate = false;
     this.latestThatFits = null;
     this.isValid = validateTree(nextProps.children);
@@ -354,7 +371,7 @@ export default class TruncateMarkup extends React.Component {
     if (!node) {
       return node;
     } else if (typeof node === 'string') {
-      return this.splitString(node, splitDirections);
+      return this.splitString(node, splitDirections, level);
     } else if (Array.isArray(node)) {
       return this.splitArray(node, splitDirections, level);
     }
@@ -369,12 +386,12 @@ export default class TruncateMarkup extends React.Component {
     return cloneWithChildren(node, newChildren, isRoot, level);
   }
 
-  splitString(string, splitDirections = []) {
+  splitString(string, splitDirections = [], level) {
     if (!splitDirections.length) {
       return string;
     }
 
-    if (splitDirections.length && string.length === 1) {
+    if (splitDirections.length && this.policy.isAtomic(string)) {
       // allow for an extra render test with the current character included
       // in most cases this variation was already tested, but some edge cases require this check
       // NOTE could be removed once EC#1 is taken care of
@@ -389,18 +406,29 @@ export default class TruncateMarkup extends React.Component {
       return string;
     }
 
+    if (this.policy.tokenizeString) {
+      const wordsArray = this.splitArray(
+        this.policy.tokenizeString(string),
+        splitDirections,
+        level,
+      );
+
+      // in order to preserve the input structure
+      return wordsArray.join('');
+    }
+
     const [splitDirection, ...restSplitDirections] = splitDirections;
     const pivotIndex = Math.ceil(string.length / 2);
+    const beforeString = string.substring(0, pivotIndex);
 
     if (splitDirection === SPLIT.LEFT) {
-      const subString = string.substring(0, pivotIndex);
-
-      return this.splitString(subString, restSplitDirections);
+      return this.splitString(beforeString, restSplitDirections, level);
     }
-    const beforeString = string.substring(0, pivotIndex);
     const afterString = string.substring(pivotIndex);
 
-    return beforeString + this.splitString(afterString, restSplitDirections);
+    return (
+      beforeString + this.splitString(afterString, restSplitDirections, level)
+    );
   }
 
   splitArray(array, splitDirections = [], level) {
@@ -412,7 +440,7 @@ export default class TruncateMarkup extends React.Component {
       const [item] = array;
 
       if (typeof item === 'string') {
-        return [this.splitString(item, splitDirections)];
+        return [this.splitString(item, splitDirections, level)];
       }
       const { children } = item.props;
 
@@ -428,13 +456,11 @@ export default class TruncateMarkup extends React.Component {
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
     const pivotIndex = Math.ceil(array.length / 2);
+    const beforeArray = array.slice(0, pivotIndex);
 
     if (splitDirection === SPLIT.LEFT) {
-      const subArray = array.slice(0, pivotIndex);
-
-      return this.splitArray(subArray, restSplitDirections, level);
+      return this.splitArray(beforeArray, restSplitDirections, level);
     }
-    const beforeArray = array.slice(0, pivotIndex);
     const afterArray = array.slice(pivotIndex);
 
     return beforeArray.concat(

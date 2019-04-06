@@ -6,7 +6,7 @@
 
 React component for truncating JSX markup.
 
-[Examples with code snippets](https://react-truncate-markup-ovpiqisenk.now.sh)  
+[Examples with code snippets](https://react-truncate-markup-ovpiqisenk.now.sh)
 [CodeSandbox demo](https://codesandbox.io/s/4w2jrplym4)
 
 ## Why?
@@ -164,6 +164,16 @@ A callback that gets called after truncation. It receives a bool value - `true` 
 > _Note_: To prevent infinite loops, _onTruncate_ callback gets called only after the initial run (on mount), any subsequent props/children updates will trigger a recomputation, but _onTruncate_ won't get called for these updates.
 >
 > If you, however, wish to have _onTruncate_ called after some update, [change the `key` prop](https://reactjs.org/docs/reconciliation.html#keys) on the `<TruncateMarkup />` component - it will make React to remount the component, instead of updating it.
+
+### `tokenize`
+
+> default value: `characters`
+
+By default, the markup is split naively by size, i.e. words can be split
+To override this behaviour, you can use the following values:
+ - `characters` - any text can be divided
+ - `words` - each word, separated by space or other white character, is undividable entity.
+  Note that a string `end.12324??!@!!abcd` does not contain any space, is considered to be a single word and cannot be split. Additionaly, you can use `&nbsp` in case you want keep some words glued together.
 
 ## Contributing
 
