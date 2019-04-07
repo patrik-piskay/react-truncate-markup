@@ -76,6 +76,7 @@ class Demo extends Component {
             <a href="#more-markup">more markup</a>
             <a href="#resizable-box">resizable box</a>
             <a href="#onTruncate-callback">onTruncate callback</a>
+            <a href="#tokenize-words">tokenize: words</a>
           </div>
         </div>
         <div className="main">
@@ -555,6 +556,58 @@ const wordCountEllipsis = node => {
   Did truncate? {this.state.lastWasTruncated ? 'Yes' : 'No'}
 </div>
 `,
+                      Prism.languages.javascript,
+                    ),
+                  }}
+                />
+              </pre>
+            </div>
+          </div>
+
+          <h2 id="tokenize-words">Tokenize: words</h2>
+
+          <div className="block margin">
+            <div className="eval">
+              <ResizableBox
+                width={240}
+                height={75}
+                minConstraints={[150, 75]}
+                maxConstraints={[600, 75]}
+                className="box"
+              >
+                <TruncateMarkup
+                  lines={3}
+                  tokenize="words"
+                  ellipsis={wordCountEllipsis}
+                >
+                  <div>{longText}</div>
+                </TruncateMarkup>
+              </ResizableBox>
+            </div>
+
+            <div className="code">
+              <pre>
+                <code
+                  className="language-jsx"
+                  dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(
+                      `const longText =
+  'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do ' +
+  'eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ' +
+  'ad minim veniam, quis nostrud exercitation ullamco laboris nisi ' +
+  'ut aliquip ex ea commodo consequat.';
+
+const wordCountEllipsis = node => {
+  const originalWordCount = longText.match(/\\S+/g).length;
+  const currentWordCount = node.props.children.match(/\\S+/g).length;
+
+  return \`... (+\${originalWordCount - currentWordCount} words)\`;
+};
+
+<TruncateMarkup lines={3} tokenize="words" ellipsis={wordCountEllipsis}>
+  <div>{longText}</div>
+</TruncateMarkup>
+  `,
                       Prism.languages.javascript,
                     ),
                   }}

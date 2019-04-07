@@ -6,7 +6,7 @@
 
 React component for truncating JSX markup.
 
-[Examples with code snippets](https://react-truncate-markup-ovpiqisenk.now.sh)
+[Examples with code snippets](https://react-truncate-markup-guzutnrduf.now.sh)  
 [CodeSandbox demo](https://codesandbox.io/s/4w2jrplym4)
 
 ## Why?
@@ -169,11 +169,10 @@ A callback that gets called after truncation. It receives a bool value - `true` 
 
 > default value: `characters`
 
-By default, the markup is split naively by size, i.e. words can be split
-To override this behaviour, you can use the following values:
- - `characters` - any text can be divided
- - `words` - each word, separated by space or other white character, is undividable entity.
-  Note that a string `end.12324??!@!!abcd` does not contain any space, is considered to be a single word and cannot be split. Additionaly, you can use `&nbsp` in case you want keep some words glued together.
+By default, any single character is considered the smallest, undividable entity, so the input markup can be truncated at any point (even midword). 
+To override this behaviour, you can set the `tokenize` prop to following values:
+ - `characters` - _[default]_ the input text can be truncated at any point
+ - `words` - each word, separated by a whitespace character, is undividable entity. The only exception to this are words separated by the `&nbsp` character, which are still honored and can be used in case you want to keep the words together
 
 ## Contributing
 

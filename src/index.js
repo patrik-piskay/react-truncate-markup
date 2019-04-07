@@ -30,8 +30,7 @@ const getTokenizePolicyByProp = tokenize => {
   if (process.env.NODE_ENV !== 'production' && !TOKENIZE_POLICY[tokenize]) {
     /* eslint-disable no-console */
     console.warn(
-      `ReactTruncateMarkup: Unknown option for prop 'tokenize': '${tokenize}'.
-      Option 'characters' will be used instead.`,
+      `ReactTruncateMarkup: Unknown option for prop 'tokenize': '${tokenize}'. Option 'characters' will be used instead.`,
     );
     /* eslint-enable */
   }
