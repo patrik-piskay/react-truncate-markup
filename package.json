@@ -45,7 +45,6 @@
     "release": "release-it"
   },
   "peerDependencies": {
-    "prop-types": ">=15",
     "react": ">=15"
   },
   "devDependencies": {
@@ -64,7 +63,6 @@
     "polyserve": "^0.27.12",
     "prettier": "1.7.4",
     "prismjs": "1.8.1",
-    "prop-types": "15.6.0",
     "puppeteer": "^1.5.0",
     "puppeteer-screenshot-tester": "^1.0.4",
     "react": "^16.0.0",
@@ -74,6 +72,7 @@
   },
   "dependencies": {
     "line-height": "0.3.1",
+    "prop-types": "^15.6.0",
     "resize-observer-polyfill": "1.5.0"
   },
   "author": "Patrik Piskay",
