@@ -152,7 +152,7 @@ export default class TruncateMarkup extends React.Component {
     this.handleResize();
   }
 
-  componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
