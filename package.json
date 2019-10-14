@@ -39,7 +39,9 @@
     "clean": "nwb clean-module && nwb clean-demo",
     "test": "yarn lint && yarn browser-test && yarn screenshot-test",
     "test:ci": "yarn lint && yarn browser-test && docker run -t react-truncate-markup",
-    "lint": "eslint src/**/*.js demo/src/*.js",
+    "lint": "yarn lint-src && yarn lint-demo",
+    "lint-src": "eslint src/**/*.js",
+    "lint-demo": "eslint demo/src/*.js",
     "browser-test": "yarn nwb test",
     "screenshot-test": "docker build -t react-truncate-markup . && docker run -t -v ${PWD}:/app -v /app/node_modules -v /app/__tests__/app/node_modules react-truncate-markup",
     "release": "release-it"
