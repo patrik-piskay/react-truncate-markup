@@ -46,8 +46,88 @@ const rolesLeftEllipsis = node => {
   return `... (+${originalRolesCount - displayedRolesCount} roles)`;
 };
 
+class OnTruncateCallback extends Component {
+  state = { onTruncateCalledCount: 0 };
+
+  incrementTruncateCalledCount = wasTruncated => {
+    this.setState(state => ({
+      onTruncateCalledCount: state.onTruncateCalledCount + 1,
+      lastWasTruncated: wasTruncated,
+    }));
+  };
+  render() {
+    return (
+      <React.Fragment>
+        <ResizableBox
+          width={240}
+          height={40}
+          minConstraints={[150, 40]}
+          maxConstraints={[350, 40]}
+          className="box"
+        >
+          <TruncateMarkup
+            lines={1}
+            onTruncate={this.incrementTruncateCalledCount}
+          >
+            <div>
+              <strong>User roles: </strong>
+              {userRoles.join(', ')}
+            </div>
+          </TruncateMarkup>
+        </ResizableBox>
+        <div>
+          onTruncate called:{' '}
+          <b>
+            {this.state.onTruncateCalledCount}x<b />
+          </b>
+        </div>
+        {this.state.lastWasTruncated !== undefined && (
+          <div>
+            Did truncate? <b>{this.state.lastWasTruncated ? 'Yes' : 'No'}</b>
+          </div>
+        )}
+      </React.Fragment>
+    );
+  }
+}
+
+const OnTruncateCallbackCodeHighlight = (
+  <pre>
+    <code
+      className="language-jsx"
+      dangerouslySetInnerHTML={{
+        __html: Prism.highlight(
+          `const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
+
+<TruncateMarkup
+  lines={1}
+  onTruncate={wasTruncated => {
+    this.setState(state => ({
+      onTruncateCalledCount:
+        state.onTruncateCalledCount + 1,
+      lastWasTruncated: wasTruncated,
+    }));
+  }}
+>
+  <div>
+    <strong>User roles: </strong>
+    {userRoles.join(', ')}
+  </div>
+</TruncateMarkup>
+
+<div>
+  onTruncate called: {this.state.onTruncateCalledCount}x
+  Did truncate? {this.state.lastWasTruncated ? 'Yes' : 'No'}
+</div>
+`,
+          Prism.languages.javascript,
+        ),
+      }}
+    />
+  </pre>
+);
 class Demo extends Component {
-  state = { shouldTruncate: true, onTruncateCalledCount: 0 };
+  state = { shouldTruncate: true };
 
   toggleTruncate = () => {
     this.setState(state => ({ shouldTruncate: !state.shouldTruncate }));
@@ -491,77 +571,10 @@ const wordCountEllipsis = node => {
 
           <div className="block">
             <div className="eval">
-              <ResizableBox
-                width={240}
-                height={40}
-                minConstraints={[150, 40]}
-                maxConstraints={[350, 40]}
-                className="box"
-              >
-                <TruncateMarkup
-                  lines={1}
-                  onTruncate={wasTruncated => {
-                    this.setState(state => ({
-                      onTruncateCalledCount: state.onTruncateCalledCount + 1,
-                      lastWasTruncated: wasTruncated,
-                    }));
-                  }}
-                >
-                  <div>
-                    <strong>User roles: </strong>
-                    {userRoles.join(', ')}
-                  </div>
-                </TruncateMarkup>
-              </ResizableBox>
-              <div>
-                onTruncate called:{' '}
-                <b>
-                  {this.state.onTruncateCalledCount}x<b />
-                </b>
-              </div>
-              {this.state.lastWasTruncated !== undefined && (
-                <div>
-                  Did truncate?{' '}
-                  <b>{this.state.lastWasTruncated ? 'Yes' : 'No'}</b>
-                </div>
-              )}
+              <OnTruncateCallback />
             </div>
 
-            <div className="code">
-              <pre>
-                <code
-                  className="language-jsx"
-                  dangerouslySetInnerHTML={{
-                    __html: Prism.highlight(
-                      `const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
-
-<TruncateMarkup
-  lines={1}
-  onTruncate={wasTruncated => {
-    this.setState(state => ({
-      onTruncateCalledCount:
-        state.onTruncateCalledCount + 1,
-      lastWasTruncated: wasTruncated,
-    }));
-  }}
->
-  <div>
-    <strong>User roles: </strong>
-    {userRoles.join(', ')}
-  </div>
-</TruncateMarkup>
-
-<div>
-  onTruncate called: {this.state.onTruncateCalledCount}x
-  Did truncate? {this.state.lastWasTruncated ? 'Yes' : 'No'}
-</div>
-`,
-                      Prism.languages.javascript,
-                    ),
-                  }}
-                />
-              </pre>
-            </div>
+            <div className="code">{OnTruncateCallbackCodeHighlight}</div>
           </div>
 
           <h2 id="tokenize-words">Tokenize: words</h2>
