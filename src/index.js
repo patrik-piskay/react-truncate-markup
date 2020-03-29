@@ -120,10 +120,12 @@ export default class TruncateMarkup extends React.Component {
     onTruncate: () => {},
     tokenize: 'characters',
   };
-
-  state = {
-    text: this.childrenElementWithRef(this.props.children),
-  };
+  constructor(props) {
+    super(props);
+    this.state = {
+      text: this.childrenElementWithRef(this.props.children),
+    };
+  }
 
   isValid = validateTree(this.props.children);
   lineHeight = null;
@@ -148,14 +150,9 @@ export default class TruncateMarkup extends React.Component {
     this.lineHeight = this.props.lineHeight || getLineHeight(this.el);
     this.policy = getTokenizePolicyByProp(this.props.tokenize);
     this.truncate();
-
-    this.handleResize();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
     this.policy = getTokenizePolicyByProp(nextProps.tokenize);
     this.shouldTruncate = false;
     this.latestThatFits = null;
@@ -174,8 +171,6 @@ export default class TruncateMarkup extends React.Component {
         this.lineHeight = nextProps.lineHeight || getLineHeight(this.el);
         this.shouldTruncate = true;
         this.truncate();
-
-        this.handleResize();
       },
     );
   }
@@ -226,10 +221,6 @@ export default class TruncateMarkup extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-    }
-
     this.lineHeight = null;
     this.origText = null;
     this.latestThatFits = null;
@@ -243,11 +234,17 @@ export default class TruncateMarkup extends React.Component {
     }
   };
 
-  handleResize = () => {
+  handleResize = (el, prevResizeObserver) => {
+    // clean up previous observer
+    if (prevResizeObserver) {
+      prevResizeObserver.disconnect();
+    }
+    // unmounting or just unsetting the element to be replaced with a new one later
+    if (!el) return null;
+
     /* Wrapper element resize handing */
     let initialRender = true;
-
-    this.resizeObserver = new ResizeObserver(() => {
+    const resizeCallback = () => {
       if (initialRender) {
         // ResizeObserer cb is called on initial render too so we are skipping here
         initialRender = false;
@@ -267,9 +264,14 @@ export default class TruncateMarkup extends React.Component {
           },
         );
       }
-    });
+    };
 
-    this.resizeObserver.observe(this.el);
+    const resizeObserver =
+      prevResizeObserver || new ResizeObserver(resizeCallback);
+
+    resizeObserver.observe(el);
+
+    return resizeObserver;
   };
 
   truncate() {
@@ -283,11 +285,21 @@ export default class TruncateMarkup extends React.Component {
 
     this.truncateOriginalText();
   }
+  setRef = el => {
+    const isNewEl = this.el !== el;
+    this.el = el;
+    // whenever we obtain a new element, attach resize handler
+    if (isNewEl) {
+      this.resizeObserver = this.handleResize(el, this.resizeObserver);
+    }
+  };
 
   childrenElementWithRef(children) {
     const child = React.Children.only(children);
 
-    return React.cloneElement(child, { ref: el => (this.el = el) });
+    return React.cloneElement(child, {
+      ref: this.setRef,
+    });
   }
 
   truncateOriginalText() {
