@@ -28,14 +28,14 @@ const longText =
 
 const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
 
-const wordCountEllipsis = node => {
+const wordCountEllipsis = (node) => {
   const originalWordCount = longText.match(/\S+/g).length;
   const currentWordCount = node.props.children.match(/\S+/g).length;
 
   return `... (+${originalWordCount - currentWordCount} words)`;
 };
 
-const rolesLeftEllipsis = node => {
+const rolesLeftEllipsis = (node) => {
   const displayedRoles = node.props.children[1];
 
   const originalRolesCount = userRoles.length;
@@ -49,8 +49,8 @@ const rolesLeftEllipsis = node => {
 class OnTruncateCallback extends Component {
   state = { onTruncateCalledCount: 0 };
 
-  incrementTruncateCalledCount = wasTruncated => {
-    this.setState(state => ({
+  incrementTruncateCalledCount = (wasTruncated) => {
+    this.setState((state) => ({
       onTruncateCalledCount: state.onTruncateCalledCount + 1,
       lastWasTruncated: wasTruncated,
     }));
@@ -130,7 +130,7 @@ class Demo extends Component {
   state = { shouldTruncate: true };
 
   toggleTruncate = () => {
-    this.setState(state => ({ shouldTruncate: !state.shouldTruncate }));
+    this.setState((state) => ({ shouldTruncate: !state.shouldTruncate }));
   };
 
   render() {

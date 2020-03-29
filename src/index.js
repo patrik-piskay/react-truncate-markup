@@ -16,7 +16,7 @@ const toString = (node, string = '') => {
     return string + node;
   } else if (Array.isArray(node)) {
     let newString = string;
-    node.forEach(child => {
+    node.forEach((child) => {
       newString = toString(child, newString);
     });
 
@@ -26,7 +26,7 @@ const toString = (node, string = '') => {
   return toString(node.props.children, string);
 };
 
-const getTokenizePolicyByProp = tokenize => {
+const getTokenizePolicyByProp = (tokenize) => {
   if (process.env.NODE_ENV !== 'production' && !TOKENIZE_POLICY[tokenize]) {
     /* eslint-disable no-console */
     console.warn(
@@ -38,38 +38,43 @@ const getTokenizePolicyByProp = tokenize => {
   return TOKENIZE_POLICY[tokenize] || TOKENIZE_POLICY.characters;
 };
 
-const cloneWithChildren = (node, children, isRootEl, level) => ({
-  ...node,
-  props: {
-    ...node.props,
-    style: {
-      ...node.props.style,
-      ...(isRootEl
-        ? {
-            // root element cannot be an inline element because of the line calculation
-            display: (node.props.style || {}).display || 'block',
-          }
-        : level === 2
-          ? {
-              // level 2 elements (direct children of the root element) need to be inline because of the ellipsis.
-              // if level 2 element was a block element, ellipsis would get rendered on a new line, breaking the max number of lines
-              display: (node.props.style || {}).display || 'inline-block',
-            }
-          : {}),
-    },
-    children,
-  },
-});
+const cloneWithChildren = (node, children, isRootEl, level) => {
+  const getDisplayStyle = () => {
+    if (isRootEl) {
+      return {
+        // root element cannot be an inline element because of the line calculation
+        display: (node.props.style || {}).display || 'block',
+      };
+    } else if (level === 2) {
+      return {
+        // level 2 elements (direct children of the root element) need to be inline because of the ellipsis.
+        // if level 2 element was a block element, ellipsis would get rendered on a new line, breaking the max number of lines
+        display: (node.props.style || {}).display || 'inline-block',
+      };
+    } else return {};
+  };
 
-const validateTree = node => {
+  return {
+    ...node,
+    props: {
+      ...node.props,
+      style: {
+        ...node.props.style,
+        ...getDisplayStyle(),
+      },
+      children,
+    },
+  };
+};
+
+const validateTree = (node) => {
   if (typeof node === 'string') {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
       /* eslint-disable no-console */
       console.error(
-        `ReactTruncateMarkup tried to render <${node.type
-          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`,
+        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`,
       );
       /* eslint-enable */
     }
@@ -120,12 +125,10 @@ export default class TruncateMarkup extends React.Component {
     onTruncate: () => {},
     tokenize: 'characters',
   };
-  constructor(props) {
-    super(props);
-    this.state = {
-      text: this.childrenElementWithRef(this.props.children),
-    };
-  }
+
+  state = {
+    text: this.childrenElementWithRef(this.props.children),
+  };
 
   isValid = validateTree(this.props.children);
   lineHeight = null;
@@ -227,7 +230,7 @@ export default class TruncateMarkup extends React.Component {
     this.splitDirectionSeq = [];
   }
 
-  onTruncate = wasTruncated => {
+  onTruncate = (wasTruncated) => {
     if (!this.onTruncateCalled) {
       this.onTruncateCalled = true;
       this.props.onTruncate(wasTruncated);
@@ -239,6 +242,7 @@ export default class TruncateMarkup extends React.Component {
     if (prevResizeObserver) {
       prevResizeObserver.disconnect();
     }
+
     // unmounting or just unsetting the element to be replaced with a new one later
     if (!el) return null;
 
@@ -285,9 +289,11 @@ export default class TruncateMarkup extends React.Component {
 
     this.truncateOriginalText();
   }
-  setRef = el => {
+
+  setRef = (el) => {
     const isNewEl = this.el !== el;
     this.el = el;
+
     // whenever we obtain a new element, attach resize handler
     if (isNewEl) {
       this.resizeObserver = this.handleResize(el, this.resizeObserver);

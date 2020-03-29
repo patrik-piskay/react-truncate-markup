@@ -44,7 +44,8 @@
     "lint-demo": "eslint demo/src/*.js",
     "browser-test": "yarn nwb test",
     "screenshot-test": "docker build -t react-truncate-markup . && docker run -t -v ${PWD}:/app -v /app/node_modules -v /app/__tests__/app/node_modules react-truncate-markup",
-    "release": "release-it"
+    "release": "release-it",
+    "prettier": "prettier --write src demo"
   },
   "peerDependencies": {
     "react": ">=15"
@@ -67,7 +68,7 @@
     "lint-staged": "4.2.3",
     "nwb": "0.19.0",
     "polyserve": "^0.27.12",
-    "prettier": "1.7.4",
+    "prettier": "^2.0.2",
     "prismjs": "1.8.1",
     "puppeteer": "^1.5.0",
     "puppeteer-screenshot-tester": "^1.0.4",
