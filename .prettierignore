@@ -4,3 +4,5 @@ dist/
 node_modules/
 __snapshots__
 README.md
+__tests__/app/.cache
+__tests__/app/public

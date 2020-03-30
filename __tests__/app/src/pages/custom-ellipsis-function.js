@@ -9,7 +9,7 @@ const style = {
 const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
 
 class TestCase extends React.Component {
-  rolesLeftEllipsis = node => {
+  rolesLeftEllipsis = (node) => {
     const displayedRoles = node.props.children[1];
 
     const originalRolesCount = userRoles.length;

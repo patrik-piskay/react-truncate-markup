@@ -4,12 +4,12 @@ import expect from 'expect';
 
 import TruncateMarkup from '../src';
 
-const consoleErrorMsg = componentName =>
+const consoleErrorMsg = (componentName) =>
   `ReactTruncateMarkup tried to render <${componentName} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`;
 
 let div;
 
-const renderIntoDocument = ReactComponent => {
+const renderIntoDocument = (ReactComponent) => {
   ReactDOM.render(ReactComponent, div);
 };
 

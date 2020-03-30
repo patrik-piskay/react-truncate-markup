@@ -40,7 +40,7 @@ describe('Screenshot tests', () => {
 
   afterEach(() => browser.close());
 
-  fs.readdirSync(`${__dirname}/app/src/pages`).forEach(file => {
+  fs.readdirSync(`${__dirname}/app/src/pages`).forEach((file) => {
     const [name] = file.split('.js');
 
     it(`Screen: ${name}`, async () => {

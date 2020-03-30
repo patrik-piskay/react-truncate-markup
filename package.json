@@ -45,7 +45,7 @@
     "browser-test": "yarn nwb test",
     "screenshot-test": "docker build -t react-truncate-markup . && docker run -t -v ${PWD}:/app -v /app/node_modules -v /app/__tests__/app/node_modules react-truncate-markup",
     "release": "release-it",
-    "prettier": "prettier --write src demo"
+    "prettier": "prettier --write src demo __tests__"
   },
   "peerDependencies": {
     "react": ">=15"

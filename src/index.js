@@ -126,9 +126,13 @@ export default class TruncateMarkup extends React.Component {
     tokenize: 'characters',
   };
 
-  state = {
-    text: this.childrenElementWithRef(this.props.children),
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      text: this.childrenElementWithRef(this.props.children),
+    };
+  }
 
   isValid = validateTree(this.props.children);
   lineHeight = null;
