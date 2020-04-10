@@ -126,6 +126,8 @@ const OnTruncateCallbackCodeHighlight = (
     />
   </pre>
 );
+
+const Foo = props => props.children;
 class Demo extends Component {
   state = { shouldTruncate: true };
 
@@ -621,6 +623,70 @@ const wordCountEllipsis = node => {
   <div>{longText}</div>
 </TruncateMarkup>
   `,
+                      Prism.languages.javascript,
+                    ),
+                  }}
+                />
+              </pre>
+            </div>
+          </div>
+
+          <h2 id="Atomic Markup">TitleTodo</h2>
+          <div className="block">
+            <div className="eval">
+              <ResizableBox
+                width={240}
+                height={75}
+                minConstraints={[80, 75]}
+                maxConstraints={[600, 75]}
+                className="box"
+              >
+                <TruncateMarkup lines={3}>
+                  <div>
+                    <b>
+                      (this part is just <i>NORMAL</i> text - splittable
+                      anywhere )
+                    </b>
+                    <TruncateMarkup.Atom>
+                      {' '}
+                      (this part is atomic, not splittable){' '}
+                    </TruncateMarkup.Atom>
+                    <TruncateMarkup.Atom>
+                      <Foo>
+                        <b>((</b>Foo Component that can be used, not splittable<b>))</b>
+                      </Foo>
+                    </TruncateMarkup.Atom>
+                  </div>
+                </TruncateMarkup>
+              </ResizableBox>
+            </div>
+
+            <div className="code">
+              <pre>
+                <code
+                  className="language-jsx"
+                  dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(
+                      `const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
+
+const rolesLeftEllipsis = node => {
+  const displayedRoles = node.props.children[1];
+
+  const originalRolesCount = userRoles.length;
+  const displayedRolesCount = displayedRoles
+    ? displayedRoles.split(', ').filter(Boolean).length
+    : 0;
+
+  return \`... (+\${originalRolesCount - displayedRolesCount} roles)\`;
+};
+
+<TruncateMarkup lines={1} ellipsis={rolesLeftEllipsis}>
+  <div>
+    <strong>User roles: </strong>
+    {userRoles.join(', ')}
+  </div>
+</TruncateMarkup>
+`,
                       Prism.languages.javascript,
                     ),
                   }}

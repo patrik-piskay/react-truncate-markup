@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import getLineHeight from 'line-height';
 import ResizeObserver from 'resize-observer-polyfill';
 import TOKENIZE_POLICY from './tokenize-rules';
+import { Atom, isAtomComponent, ATOM_STRING_ID } from './atom';
 
 const SPLIT = {
   LEFT: true,
@@ -15,6 +16,8 @@ const toString = (node, string = '') => {
     return string;
   } else if (typeof node === 'string') {
     return string + node;
+  } else if (isAtomComponent(node)) {
+    return string + ATOM_STRING_ID;
   }
   const children = Array.isArray(node) ? node : node.props.children;
 
@@ -64,14 +67,16 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
   };
 };
 
-const validateTree = (node) => {
-  if (typeof node === 'string') {
+const validateTree = node => {
+  if (typeof node === 'string' || isAtomComponent(node)) {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
       /* eslint-disable no-console */
       console.error(
-        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`,
+        `ReactTruncateMarkup tried to render <${node.type
+          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.
+          You can possibly use Atom component to wrap any content - not splittable`,
       );
       /* eslint-enable */
     }
@@ -89,6 +94,8 @@ const validateTree = (node) => {
 };
 
 export default class TruncateMarkup extends React.Component {
+  static Atom = Atom;
+
   static propTypes = {
     children: PropTypes.element.isRequired,
     lines: PropTypes.number,
@@ -392,6 +399,11 @@ export default class TruncateMarkup extends React.Component {
       return this.splitString(node, splitDirections, level);
     } else if (Array.isArray(node)) {
       return this.splitArray(node, splitDirections, level);
+    } else if (isAtomComponent(node)) {
+      // TODO: is this related to EC#1 ???
+      this.endFound = true;
+
+      return node;
     }
 
     const newChildren = this.split(
@@ -456,21 +468,7 @@ export default class TruncateMarkup extends React.Component {
     }
 
     if (array.length === 1) {
-      const [item] = array;
-
-      if (typeof item === 'string') {
-        return [this.splitString(item, splitDirections, level)];
-      }
-      const { children } = item.props;
-
-      const newChildren = this.split(
-        children,
-        splitDirections,
-        /* isRoot */ false,
-        level + 1,
-      );
-
-      return [cloneWithChildren(item, newChildren, /* isRoot */ false, level)];
+      return [this.split(array[0], splitDirections, /* isRoot */ false, level)];
     }
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
