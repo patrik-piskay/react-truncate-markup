@@ -15,16 +15,12 @@ const toString = (node, string = '') => {
     return string;
   } else if (typeof node === 'string') {
     return string + node;
-  } else if (Array.isArray(node)) {
-    let newString = string;
-    node.forEach((child) => {
-      newString = toString(child, newString);
-    });
-
-    return newString;
   }
+  const children = Array.isArray(node) ? node : node.props.children;
 
-  return toString(node.props.children, string);
+  return (
+    string + React.Children.map(children, child => toString(child)).join('')
+  );
 };
 
 const getTokenizePolicyByProp = (tokenize) => {
@@ -84,14 +80,9 @@ const validateTree = (node) => {
   }
 
   if (node.props.children) {
-    if (Array.isArray(node.props.children)) {
-      return node.props.children.reduce(
-        (isValid, child) => isValid && validateTree(child),
-        true,
-      );
-    }
-
-    return validateTree(node.props.children);
+    return React.Children
+      .toArray(node.props.children)
+      .reduce((isValid, child) => isValid && validateTree(child), true);
   }
 
   return true;
@@ -354,9 +345,7 @@ export default class TruncateMarkup extends React.Component {
         : ellipsis;
 
     const newChildren = newRootEl.props.children;
-    const newChildrenWithEllipsis = Array.isArray(newChildren)
-      ? [...newChildren, ellipsis]
-      : [newChildren, ellipsis];
+    const newChildrenWithEllipsis = [].concat(newChildren, ellipsis);
 
     // edge case tradeoff EC#1 - on initial render it doesn't fit in the requested number of lines (1) so it starts truncating
     // - because of truncating and the ellipsis position, div#lvl2 will have display set to 'inline-block',

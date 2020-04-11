@@ -43,6 +43,7 @@
     "lint-src": "eslint src/**/*.js",
     "lint-demo": "eslint demo/src/*.js",
     "browser-test": "yarn nwb test",
+    "browser-test:watch": "nwb test-react --server",
     "screenshot-test": "docker build -t react-truncate-markup . && docker run -t -v ${PWD}:/app -v /app/node_modules -v /app/__tests__/app/node_modules react-truncate-markup",
     "release": "release-it",
     "prettier": "prettier --write src demo __tests__"

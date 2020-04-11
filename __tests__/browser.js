@@ -183,4 +183,35 @@ describe('TruncateMarkup', () => {
       expect(onUpdate.calls[0].arguments).toEqual([longText]);
     });
   });
+
+  describe('children validation', () => {
+    it('handles multiple arrays as children', () => {
+      const instance = new TruncateMarkup({
+        children: (
+          <div>
+            {['1']}
+            {['2']}
+          </div>
+        ),
+      });
+
+      expect(() => {
+        instance.isValid();
+      }).toNotThrow();
+    });
+    it('handles nested arrays as children', () => {
+      const instance = new TruncateMarkup({
+        children: (
+          <div>
+            {[]}
+            {['1', '2', ['3', []]]}
+          </div>
+        ),
+      });
+
+      expect(() => {
+        instance.isValid();
+      }).toNotThrow();
+    });
+  });
 });
