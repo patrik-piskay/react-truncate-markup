@@ -75,8 +75,7 @@ const validateTree = node => {
       /* eslint-disable no-console */
       console.error(
         `ReactTruncateMarkup tried to render <${node.type
-          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.
-          You can possibly use Atom component to wrap any content - not splittable`,
+          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`,
       );
       /* eslint-enable */
     }
