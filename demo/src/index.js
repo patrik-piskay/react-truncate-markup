@@ -46,6 +46,20 @@ const rolesLeftEllipsis = (node) => {
   return `... (+${originalRolesCount - displayedRolesCount} roles)`;
 };
 
+const TruncateChildren = props => {
+  const rootChild = React.Children.only(props.children);
+
+  return (
+    <TruncateMarkup {...props}>
+      {React.cloneElement(rootChild, {
+        children: React.Children.map(rootChild.props.children, child => (
+          <TruncateMarkup.Atom>{child}</TruncateMarkup.Atom>
+        )),
+      })}
+    </TruncateMarkup>
+  );
+};
+
 class OnTruncateCallback extends Component {
   state = { onTruncateCalledCount: 0 };
 
@@ -159,6 +173,8 @@ class Demo extends Component {
             <a href="#resizable-box">resizable box</a>
             <a href="#onTruncate-callback">onTruncate callback</a>
             <a href="#tokenize-words">tokenize: words</a>
+            <a href="#atomic-elements">TruncateMarkup.Atom</a>
+            <a href="#atomic-children">Truncate Children</a>
           </div>
         </div>
         <div className="main">
@@ -631,7 +647,7 @@ const wordCountEllipsis = node => {
             </div>
           </div>
 
-          <h2 id="Atomic Markup">TitleTodo</h2>
+          <h2 id="atomic-elements">TruncateMarkup.Atom</h2>
           <div className="block">
             <div className="eval">
               <ResizableBox
@@ -644,20 +660,69 @@ const wordCountEllipsis = node => {
                 <TruncateMarkup lines={3}>
                   <div>
                     <b>
-                      (this part is just <i>NORMAL</i> text - splittable
-                      anywhere )
+                      (<i>NORMAL</i> text - splittable anywhere)
                     </b>
                     <TruncateMarkup.Atom>
-                      {' '}
-                      (this part is atomic, not splittable){' '}
+                      <i> (atomic, not splittable) </i>
                     </TruncateMarkup.Atom>
                     <TruncateMarkup.Atom>
                       <Foo>
-                        <b>((</b>Foo Component that can be used, not splittable<b>))</b>
+                        <b>(Foo Component that can be used, not splittable)</b>
                       </Foo>
                     </TruncateMarkup.Atom>
                   </div>
                 </TruncateMarkup>
+              </ResizableBox>
+            </div>
+            <div className="code">
+              <pre>
+                <code
+                  className="language-jsx"
+                  dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(
+                      `<TruncateMarkup lines={3}>
+  <div>
+    <b>
+      (<i>NORMAL</i> text - splittable anywhere)
+    </b>
+    <TruncateMarkup.Atom>
+      <i> (atomic, not splittable) </i>
+    </TruncateMarkup.Atom>
+    <TruncateMarkup.Atom>
+      <Foo>
+        <b>(Foo Component that can be used, not splittable)</b>
+      </Foo>
+    </TruncateMarkup.Atom>
+  </div>
+</TruncateMarkup>
+`,
+                      Prism.languages.javascript,
+                    ),
+                  }}
+                />
+              </pre>
+            </div>
+          </div>
+
+          <h2 id="atomic-children">Truncate Children</h2>
+          <div className="block">
+            <div className="eval">
+              <ResizableBox
+                width={240}
+                height={75}
+                minConstraints={[80, 75]}
+                maxConstraints={[600, 75]}
+                className="box"
+              >
+                <TruncateChildren lines={3}>
+                  <div>
+                    <b>Atoms: </b>
+                    <Foo>
+                      ((Foo Component that can be used, not splittable))
+                    </Foo>
+                    <b> (atomic sentence, not splittable)</b>
+                  </div>
+                </TruncateChildren>
               </ResizableBox>
             </div>
 
@@ -667,25 +732,30 @@ const wordCountEllipsis = node => {
                   className="language-jsx"
                   dangerouslySetInnerHTML={{
                     __html: Prism.highlight(
-                      `const userRoles = ['Admin', 'Editor', 'Collaborator', 'User'];
+                      `const Foo = props => props.children;
+const TruncateChildren = props => {
+  const rootChild = React.Children.only(props.children);
 
-const rolesLeftEllipsis = node => {
-  const displayedRoles = node.props.children[1];
-
-  const originalRolesCount = userRoles.length;
-  const displayedRolesCount = displayedRoles
-    ? displayedRoles.split(', ').filter(Boolean).length
-    : 0;
-
-  return \`... (+\${originalRolesCount - displayedRolesCount} roles)\`;
+  return (
+    <TruncateMarkup {...props}>
+      {React.cloneElement(rootChild, {
+        children: React.Children.map(rootChild.props.children, child => (
+          <TruncateMarkup.Atom>{child}</TruncateMarkup.Atom>
+        )),
+      })}
+    </TruncateMarkup>
+  );
 };
 
-<TruncateMarkup lines={1} ellipsis={rolesLeftEllipsis}>
+<TruncateChildren lines={3}>
   <div>
-    <strong>User roles: </strong>
-    {userRoles.join(', ')}
+    <b>Atoms: </b>
+    <Foo>
+      ((Foo Component that can be used, not splittable))
+    </Foo>
+    <b> (atomic sentence, not splittable)</b>
   </div>
-</TruncateMarkup>
+</TruncateChildren>
 `,
                       Prism.languages.javascript,
                     ),
