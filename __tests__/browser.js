@@ -4,7 +4,7 @@ import expect from 'expect';
 
 import TruncateMarkup from '../src';
 
-const consoleErrorMsg = componentName =>
+const consoleErrorMsg = (componentName) =>
   `ReactTruncateMarkup tried to render <${componentName} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`;
 
 let div;
@@ -258,7 +258,7 @@ describe('TruncateMarkup', () => {
       expect(truncateFnSpy.calls.length).toBe(1);
     });
 
-    it('calls componentDidUpdate() 7 times for 16 characters', done => {
+    it('calls componentDidUpdate() 7 times for 16 characters', (done) => {
       renderIntoDocument(
         <TruncateMarkup ellipsis="" onTruncate={assertion}>
           {/* even with too small space, 1 character will be displayed on 1st line */}
@@ -274,7 +274,7 @@ describe('TruncateMarkup', () => {
         done();
       }
     });
-    it('calls componentDidUpdate() 8 times for 32 characters', done => {
+    it('calls componentDidUpdate() 8 times for 32 characters', (done) => {
       renderIntoDocument(
         <TruncateMarkup ellipsis="" onTruncate={assertion}>
           {/* even with too small space, 1 character will be displayed on 1st line */}
@@ -290,14 +290,14 @@ describe('TruncateMarkup', () => {
         done();
       }
     });
-    it('calls componentDidUpdate() 6 times for 16 Atoms', done => {
+    it('calls componentDidUpdate() 6 times for 16 Atoms', (done) => {
       renderIntoDocument(
         <TruncateMarkup ellipsis="" onTruncate={assertion}>
           {/* even with too small space, 1 atom will be displayed on 1st line */}
           <div style={{ 'max-width': '1px' }}>
-            {(EIGHT_DIGITS + EIGHT_DIGITS)
-              .split('')
-              .map(c => <TruncateMarkup.Atom>{c + ' '}</TruncateMarkup.Atom>)}
+            {(EIGHT_DIGITS + EIGHT_DIGITS).split('').map((c) => (
+              <TruncateMarkup.Atom>{c + ' '}</TruncateMarkup.Atom>
+            ))}
           </div>
         </TruncateMarkup>,
       );

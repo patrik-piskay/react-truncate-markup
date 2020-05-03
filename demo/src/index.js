@@ -46,13 +46,13 @@ const rolesLeftEllipsis = (node) => {
   return `... (+${originalRolesCount - displayedRolesCount} roles)`;
 };
 
-const TruncateChildren = props => {
+const TruncateChildren = (props) => {
   const rootChild = React.Children.only(props.children);
 
   return (
     <TruncateMarkup {...props}>
       {React.cloneElement(rootChild, {
-        children: React.Children.map(rootChild.props.children, child => (
+        children: React.Children.map(rootChild.props.children, (child) => (
           <TruncateMarkup.Atom>{child}</TruncateMarkup.Atom>
         )),
       })}
@@ -141,7 +141,7 @@ const OnTruncateCallbackCodeHighlight = (
   </pre>
 );
 
-const Foo = props => props.children;
+const Foo = (props) => props.children;
 class Demo extends Component {
   state = { shouldTruncate: true };
 

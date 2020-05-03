@@ -22,7 +22,7 @@ const toString = (node, string = '') => {
   const children = Array.isArray(node) ? node : node.props.children;
 
   return (
-    string + React.Children.map(children, child => toString(child)).join('')
+    string + React.Children.map(children, (child) => toString(child)).join('')
   );
 };
 
@@ -67,15 +67,14 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
   };
 };
 
-const validateTree = node => {
+const validateTree = (node) => {
   if (typeof node === 'string' || isAtomComponent(node)) {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
       /* eslint-disable no-console */
       console.error(
-        `ReactTruncateMarkup tried to render <${node.type
-          .name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`,
+        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`,
       );
       /* eslint-enable */
     }
@@ -84,9 +83,10 @@ const validateTree = node => {
   }
 
   if (node.props.children) {
-    return React.Children
-      .toArray(node.props.children)
-      .reduce((isValid, child) => isValid && validateTree(child), true);
+    return React.Children.toArray(node.props.children).reduce(
+      (isValid, child) => isValid && validateTree(child),
+      true,
+    );
   }
 
   return true;

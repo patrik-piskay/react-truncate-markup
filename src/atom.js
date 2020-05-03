@@ -1,8 +1,8 @@
-export const Atom = props => {
+export const Atom = (props) => {
   return props.children || null;
 };
 
-export const isAtomComponent = reactEl => {
+export const isAtomComponent = (reactEl) => {
   return !!(reactEl && reactEl.type === Atom);
 };
 
