@@ -128,7 +128,7 @@ export default class TruncateMarkup extends React.Component {
     super(props);
 
     this.state = {
-      text: this.getChildrenWithRef(),
+      text: this.childrenWithRefMemo(this.props.children),
     };
   }
 
@@ -139,30 +139,28 @@ export default class TruncateMarkup extends React.Component {
   endFound = false;
   latestThatFits = null;
   onTruncateCalled = false;
-  childrenToStringMemo = memoizeOne(toString);
+
+  toStringMemo = memoizeOne(toString);
   childrenWithRefMemo = memoizeOne(this.childrenElementWithRef);
-  isValidMemo = memoizeOne(validateTree);
+  validateTreeMemo = memoizeOne(validateTree);
   policyMemo = memoizeOne(getTokenizePolicyByProp);
 
-  isValid() {
-    return this.isValidMemo(this.props.children);
+  get isValid() {
+    return this.validateTreeMemo(this.props.children);
   }
-  getChildrenToString() {
-    return this.childrenToStringMemo(this.getChildrenWithRef());
-  }
-  getChildrenWithRef() {
+  get origText() {
     return this.childrenWithRefMemo(this.props.children);
   }
-  getPolicy() {
+  get policy() {
     // using memoization to fire warning message only once
     return this.policyMemo(this.props.tokenize);
   }
+
   componentDidMount() {
-    if (!this.isValid()) {
+    if (!this.isValid) {
       return;
     }
-    // trigger warning, if any
-    this.getPolicy();
+
     // get the computed line-height of the parent element
     // it'll be used for determining whether the text fits the container or not
     this.lineHeight = this.props.lineHeight || getLineHeight(this.el);
@@ -175,10 +173,10 @@ export default class TruncateMarkup extends React.Component {
 
     this.setState(
       {
-        text: this.childrenElementWithRef(nextProps.children),
+        text: this.childrenWithRefMemo(nextProps.children),
       },
       () => {
-        if (!this.isValid()) {
+        if (!this.isValid) {
           return;
         }
 
@@ -190,7 +188,7 @@ export default class TruncateMarkup extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.shouldTruncate === false || this.isValid() === false) {
+    if (this.shouldTruncate === false || this.isValid === false) {
       return;
     }
 
@@ -230,7 +228,7 @@ export default class TruncateMarkup extends React.Component {
         this.splitDirectionSeq.push(SPLIT.LEFT);
       }
 
-      this.tryToFit(this.getChildrenWithRef(), this.splitDirectionSeq);
+      this.tryToFit(this.origText, this.splitDirectionSeq);
     }
   }
 
@@ -269,7 +267,7 @@ export default class TruncateMarkup extends React.Component {
 
         this.setState(
           {
-            text: this.getChildrenWithRef(),
+            text: this.origText,
           },
           () => {
             this.shouldTruncate = true;
@@ -323,7 +321,7 @@ export default class TruncateMarkup extends React.Component {
     this.splitDirectionSeq = [SPLIT.LEFT];
     this.wasLastCharTested = false;
 
-    this.tryToFit(this.getChildrenWithRef(), this.splitDirectionSeq);
+    this.tryToFit(this.origText, this.splitDirectionSeq);
   }
 
   /**
@@ -367,7 +365,7 @@ export default class TruncateMarkup extends React.Component {
     //   </div>
     // </TruncateMarkup>
     const shouldRenderEllipsis =
-      toString(newChildren) !== this.getChildrenToString();
+      toString(newChildren) !== this.toStringMemo(this.props.children);
     this.setState({
       text: {
         ...newRootEl,
@@ -420,8 +418,7 @@ export default class TruncateMarkup extends React.Component {
       return string;
     }
 
-    const policy = this.getPolicy();
-    if (splitDirections.length && policy.isAtomic(string)) {
+    if (splitDirections.length && this.policy.isAtomic(string)) {
       // allow for an extra render test with the current character included
       // in most cases this variation was already tested, but some edge cases require this check
       // NOTE could be removed once EC#1 is taken care of
@@ -436,9 +433,9 @@ export default class TruncateMarkup extends React.Component {
       return string;
     }
 
-    if (policy.tokenizeString) {
+    if (this.policy.tokenizeString) {
       const wordsArray = this.splitArray(
-        policy.tokenizeString(string),
+        this.policy.tokenizeString(string),
         splitDirections,
         level,
       );
