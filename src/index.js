@@ -366,6 +366,7 @@ export default class TruncateMarkup extends React.Component {
     // </TruncateMarkup>
     const shouldRenderEllipsis =
       toString(newChildren) !== this.toStringMemo(this.props.children);
+
     this.setState({
       text: {
         ...newRootEl,
@@ -390,17 +391,14 @@ export default class TruncateMarkup extends React.Component {
    * @return {null|string|Array|Object} - split JSX node
    */
   split(node, splitDirections, isRoot = false, level = 1) {
-    if (!node) {
+    if (!node || isAtomComponent(node)) {
+      this.endFound = true;
+
       return node;
     } else if (typeof node === 'string') {
       return this.splitString(node, splitDirections, level);
     } else if (Array.isArray(node)) {
       return this.splitArray(node, splitDirections, level);
-    } else if (isAtomComponent(node)) {
-      // TODO: is this related to EC#1 ???
-      this.endFound = true;
-
-      return node;
     }
 
     const newChildren = this.split(
