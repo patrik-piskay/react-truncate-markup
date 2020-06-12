@@ -114,7 +114,7 @@ describe('TruncateMarkup', () => {
 
     it('should warn when using unknown value for tokenize prop', () => {
       renderIntoDocument(
-        <TruncateMarkup tokenize="unknown option">
+        <TruncateMarkup tokenize="unknown-option">
           <div>
             <span>Some text</span>
             <span>More text</span>
@@ -122,7 +122,7 @@ describe('TruncateMarkup', () => {
         </TruncateMarkup>,
       );
 
-      expect(console.warn).toHaveBeenCalled();
+      expect(console.error).toHaveBeenCalled();
     });
   });
 
@@ -213,9 +213,10 @@ describe('TruncateMarkup', () => {
       });
 
       expect(() => {
-        instance.isValid();
+        expect(instance.isValid).toBe(true);
       }).toNotThrow();
     });
+
     it('handles nested arrays as children', () => {
       const instance = new TruncateMarkup({
         children: (
@@ -227,10 +228,11 @@ describe('TruncateMarkup', () => {
       });
 
       expect(() => {
-        instance.isValid();
+        expect(instance.isValid).toBe(true);
       }).toNotThrow();
     });
   });
+
   describe('truncate updates complexity', () => {
     const EIGHT_DIGITS = '12345678';
     const spyOnPrototype = (cls, methodName) => {
@@ -240,6 +242,7 @@ describe('TruncateMarkup', () => {
     };
 
     let didMountSpy, didUpdateSpy, truncateFnSpy;
+
     beforeEach(() => {
       didMountSpy = spyOnPrototype(TruncateMarkup, 'componentDidMount');
       didUpdateSpy = spyOnPrototype(TruncateMarkup, 'componentDidUpdate');
@@ -274,6 +277,7 @@ describe('TruncateMarkup', () => {
         done();
       }
     });
+
     it('calls componentDidUpdate() 8 times for 32 characters', (done) => {
       renderIntoDocument(
         <TruncateMarkup ellipsis="" onTruncate={assertion}>
@@ -290,6 +294,7 @@ describe('TruncateMarkup', () => {
         done();
       }
     });
+
     it('calls componentDidUpdate() 6 times for 16 Atoms', (done) => {
       renderIntoDocument(
         <TruncateMarkup ellipsis="" onTruncate={assertion}>

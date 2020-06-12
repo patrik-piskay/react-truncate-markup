@@ -19,7 +19,7 @@ const toString = (node, string = '') => {
   } else if (isAtomComponent(node)) {
     return string + ATOM_STRING_ID;
   }
-  const children = Array.isArray(node) ? node : node.props.children;
+  const children = Array.isArray(node) ? node : node.props.children || '';
 
   return (
     string + React.Children.map(children, (child) => toString(child)).join('')
@@ -113,7 +113,19 @@ export default class TruncateMarkup extends React.Component {
         );
       }
     },
-    tokenize: PropTypes.oneOf(['characters', 'words']),
+    tokenize: (props, propName, componentName) => {
+      const tokenizeValue = props[propName];
+
+      if (typeof tokenizeValue !== 'undefined') {
+        if (!TOKENIZE_POLICY[tokenizeValue]) {
+          /* eslint-disable no-console */
+          return new Error(
+            `${componentName}: Unknown option for prop 'tokenize': '${tokenizeValue}'. Option 'characters' will be used instead.`,
+          );
+          /* eslint-enable */
+        }
+      }
+    },
   };
 
   static defaultProps = {
@@ -196,7 +208,10 @@ export default class TruncateMarkup extends React.Component {
       // we've found the end where we cannot split the text further
       // that means we've already found the max subtree that fits the container
       // so we are rendering that
-      if (this.state.text !== this.latestThatFits) {
+      if (
+        this.latestThatFits !== null &&
+        this.state.text !== this.latestThatFits
+      ) {
         /* eslint-disable react/no-did-update-set-state */
         this.setState({
           text: this.latestThatFits,

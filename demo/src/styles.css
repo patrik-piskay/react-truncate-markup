@@ -21,6 +21,7 @@ body {
   background-color: #eee;
   font-size: 14px;
   line-height: 1.8;
+  z-index: 1;
 }
 .side .title {
   color: #525252;
@@ -30,6 +31,9 @@ body {
 }
 .side .links {
   padding-left: 10px;
+}
+.side .links .indented {
+  padding-left: 15px;
 }
 .side a {
   display: block;

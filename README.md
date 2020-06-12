@@ -83,7 +83,9 @@ const TruncateMarkup = ReactTruncateMarkup.default;
 
 > #### :warning: Warning
 >
-> Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).
+> Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).  
+>  
+> Or, since version 5, you can take advantage of the `<TruncateMarkup.Atom />` component.
 
 ## Props
 
@@ -173,6 +175,45 @@ By default, any single character is considered the smallest, undividable entity,
 To override this behaviour, you can set the `tokenize` prop to following values:
  - `characters` - _[default]_ the input text can be truncated at any point
  - `words` - each word, separated by a whitespace character, is undividable entity. The only exception to this are words separated by the `&nbsp` character, which are still honored and can be used in case you want to keep the words together
+
+## `<TruncateMarkup.Atom />`
+
+Atoms serve as a way to let `<TruncateMarkup />` know that the content they contain is not splittable - it either renders in full or does not render at all.
+
+There are two main applications of Atoms:
+1. you want to control at what level the truncation happens (and splitting on the word level using `tokenize="word"` is not enough), e.g. split text by paragraphs
+2. you want/need to use other components inside `<TruncateMarkup />`
+
+On itself, `<TruncateMarkup />` will not truncate any content that contains other components (see the [warning box](#warning-warning) above). But it's still a useful feature.  
+
+Consider this case:
+We want to render a list of avatars and if we run out of space, we want to render however many avatars fit, plus a custom message "+X more users", with X being the number of users that are not rendered.
+
+```jsx
+<TruncateMarkup ellipsis={() => {/* renders "+X more users" */}}>
+  <div>
+    {props.users.map((user) => (
+      <Avatar key={user.id} user={user} />
+    ))}
+  </div>
+</TruncateMarkup>
+```
+
+This would not work because `<TruncateMarkup />` cannot split anything inside other components _(in this case, `<Avatar />`)_, so it bails out and doesn't even attempt to truncate. But by explicitely wrapping these components in `<TruncateMarkup.Atom />` we say we are ok with it being treated as a single piece (rendered either in full or not rendered at all), whether they contain other components or not.
+
+```jsx
+<TruncateMarkup ellipsis={() => {/* renders "+X more users" */}}>
+  <div>
+    {props.users.map((user) => (
+      <TruncateMarkup.Atom key={user.id}>
+        <Avatar user={user} />
+      </TruncateMarkup.Atom>
+    ))}
+  </div>
+</TruncateMarkup>
+```
+
+You can see this example in action in the [examples/demo app](#react-truncate-markup).
 
 ## Contributing
 

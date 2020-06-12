@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { render } from 'react-dom';
 import { ResizableBox } from 'react-resizable';
 import Prism from 'prismjs';
+import Avatar from './Avatar';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -44,20 +45,6 @@ const rolesLeftEllipsis = (node) => {
     : 0;
 
   return `... (+${originalRolesCount - displayedRolesCount} roles)`;
-};
-
-const TruncateChildren = (props) => {
-  const rootChild = React.Children.only(props.children);
-
-  return (
-    <TruncateMarkup {...props}>
-      {React.cloneElement(rootChild, {
-        children: React.Children.map(rootChild.props.children, (child) => (
-          <TruncateMarkup.Atom>{child}</TruncateMarkup.Atom>
-        )),
-      })}
-    </TruncateMarkup>
-  );
 };
 
 class OnTruncateCallback extends Component {
@@ -141,7 +128,48 @@ const OnTruncateCallbackCodeHighlight = (
   </pre>
 );
 
+const AvatarList = () => {
+  const user = {
+    name: 'Patrik Piskay',
+    image:
+      'https://avatars2.githubusercontent.com/u/966953?s=460&u=6e5b5f2a85a02ace66548f5cf1a105a22f73fc71',
+  };
+
+  const users = Array(6)
+    .fill(user)
+    .map((user, index) => ({ ...user, id: index }));
+
+  const usersLeftEllipsis = (node) => {
+    const usersRendered = node.props.children;
+
+    return `+${users.length - usersRendered.length} more`;
+  };
+
+  return (
+    <ResizableBox
+      width={240}
+      height={40}
+      minConstraints={[100, 40]}
+      maxConstraints={[450, 40]}
+      className="box"
+    >
+      <TruncateMarkup lines={1} lineHeight="38px" ellipsis={usersLeftEllipsis}>
+        <div
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          {users.map((user) => (
+            <TruncateMarkup.Atom key={user.id}>
+              <Avatar user={user} />
+            </TruncateMarkup.Atom>
+          ))}
+        </div>
+      </TruncateMarkup>
+    </ResizableBox>
+  );
+};
+
 const Foo = (props) => props.children;
+
 class Demo extends Component {
   state = { shouldTruncate: true };
 
@@ -173,8 +201,10 @@ class Demo extends Component {
             <a href="#resizable-box">resizable box</a>
             <a href="#onTruncate-callback">onTruncate callback</a>
             <a href="#tokenize-words">tokenize: words</a>
-            <a href="#atomic-elements">TruncateMarkup.Atom</a>
-            <a href="#atomic-children">Truncate Children</a>
+            <a href="#atoms">TruncateMarkup.Atom</a>
+            <a href="#atoms-avatars" className="indented">
+              Avatars example
+            </a>
           </div>
         </div>
         <div className="main">
@@ -647,7 +677,7 @@ const wordCountEllipsis = node => {
             </div>
           </div>
 
-          <h2 id="atomic-elements">TruncateMarkup.Atom</h2>
+          <h2 id="atoms">TruncateMarkup.Atom</h2>
           <div className="block">
             <div className="eval">
               <ResizableBox
@@ -685,9 +715,11 @@ const wordCountEllipsis = node => {
     <b>
       (<i>NORMAL</i> text - splittable anywhere)
     </b>
+
     <TruncateMarkup.Atom>
       <i> (atomic, not splittable) </i>
     </TruncateMarkup.Atom>
+
     <TruncateMarkup.Atom>
       <Foo>
         <b>(Foo Component that can be used, not splittable)</b>
@@ -704,26 +736,10 @@ const wordCountEllipsis = node => {
             </div>
           </div>
 
-          <h2 id="atomic-children">Truncate Children</h2>
+          <h2 id="atoms-avatars">Avatars example</h2>
           <div className="block">
             <div className="eval">
-              <ResizableBox
-                width={240}
-                height={75}
-                minConstraints={[80, 75]}
-                maxConstraints={[600, 75]}
-                className="box"
-              >
-                <TruncateChildren lines={3}>
-                  <div>
-                    <b>Atoms: </b>
-                    <Foo>
-                      ((Foo Component that can be used, not splittable))
-                    </Foo>
-                    <b> (atomic sentence, not splittable)</b>
-                  </div>
-                </TruncateChildren>
-              </ResizableBox>
+              <AvatarList />
             </div>
 
             <div className="code">
@@ -732,30 +748,33 @@ const wordCountEllipsis = node => {
                   className="language-jsx"
                   dangerouslySetInnerHTML={{
                     __html: Prism.highlight(
-                      `const Foo = props => props.children;
-const TruncateChildren = props => {
-  const rootChild = React.Children.only(props.children);
-
-  return (
-    <TruncateMarkup {...props}>
-      {React.cloneElement(rootChild, {
-        children: React.Children.map(rootChild.props.children, child => (
-          <TruncateMarkup.Atom>{child}</TruncateMarkup.Atom>
-        )),
-      })}
-    </TruncateMarkup>
-  );
+                      `const user = {
+  name: 'Patrik Piskay',
+  image:
+    'https://avatars2.githubusercontent.com/u/966953?s=460&u=6e5b5f2a85a02ace66548f5cf1a105a22f73fc71',
 };
 
-<TruncateChildren lines={3}>
-  <div>
-    <b>Atoms: </b>
-    <Foo>
-      ((Foo Component that can be used, not splittable))
-    </Foo>
-    <b> (atomic sentence, not splittable)</b>
+const users = Array(6)
+  .fill(user)
+  .map((user, index) => ({ ...user, id: index }));
+
+const usersLeftEllipsis = (node) => {
+  const usersRendered = node.props.children;
+
+  return \`+\${users.length - usersRendered.length} more\`;
+};
+
+<TruncateMarkup lines={1} lineHeight="38px" ellipsis={usersLeftEllipsis}>
+  <div
+    style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+  >
+    {users.map((user) => (
+      <TruncateMarkup.Atom key={user.id}>
+        <Avatar user={user} />
+      </TruncateMarkup.Atom>
+    ))}
   </div>
-</TruncateChildren>
+</TruncateMarkup>
 `,
                       Prism.languages.javascript,
                     ),
