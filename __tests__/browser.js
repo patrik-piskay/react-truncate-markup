@@ -5,7 +5,7 @@ import expect from 'expect';
 import TruncateMarkup from '../src';
 
 const consoleErrorMsg = (componentName) =>
-  `ReactTruncateMarkup tried to render <${componentName} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`;
+  `ReactTruncateMarkup tried to render <${componentName} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. Alternatively, you can take advantage of the <TruncateMarkup.Atom /> component (see more in the docs https://github.com/parsable/react-truncate-markup/blob/master/README.md#truncatemarkupatom-).`;
 
 let div;
 

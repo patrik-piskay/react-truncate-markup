@@ -26,18 +26,6 @@ const toString = (node, string = '') => {
   );
 };
 
-const getTokenizePolicyByProp = (tokenize) => {
-  if (process.env.NODE_ENV !== 'production' && !TOKENIZE_POLICY[tokenize]) {
-    /* eslint-disable no-console */
-    console.warn(
-      `ReactTruncateMarkup: Unknown option for prop 'tokenize': '${tokenize}'. Option 'characters' will be used instead.`,
-    );
-    /* eslint-enable */
-  }
-
-  return TOKENIZE_POLICY[tokenize] || TOKENIZE_POLICY.characters;
-};
-
 const cloneWithChildren = (node, children, isRootEl, level) => {
   const getDisplayStyle = () => {
     if (isRootEl) {
@@ -74,7 +62,7 @@ const validateTree = (node) => {
     if (process.env.NODE_ENV !== 'production') {
       /* eslint-disable no-console */
       console.error(
-        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. You can possibly use Atom component to wrap any content - not splittable`,
+        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. Alternatively, you can take advantage of the <TruncateMarkup.Atom /> component (see more in the docs https://github.com/parsable/react-truncate-markup/blob/master/README.md#truncatemarkupatom-).`,
       );
       /* eslint-enable */
     }
@@ -155,7 +143,6 @@ export default class TruncateMarkup extends React.Component {
   toStringMemo = memoizeOne(toString);
   childrenWithRefMemo = memoizeOne(this.childrenElementWithRef);
   validateTreeMemo = memoizeOne(validateTree);
-  policyMemo = memoizeOne(getTokenizePolicyByProp);
 
   get isValid() {
     return this.validateTreeMemo(this.props.children);
@@ -164,8 +151,7 @@ export default class TruncateMarkup extends React.Component {
     return this.childrenWithRefMemo(this.props.children);
   }
   get policy() {
-    // using memoization to fire warning message only once
-    return this.policyMemo(this.props.tokenize);
+    return TOKENIZE_POLICY[this.props.tokenize] || TOKENIZE_POLICY.characters;
   }
 
   componentDidMount() {
