@@ -149,7 +149,7 @@ const AvatarList = () => {
     <ResizableBox
       width={240}
       height={40}
-      minConstraints={[100, 40]}
+      minConstraints={[125, 40]}
       maxConstraints={[450, 40]}
       className="box"
     >
