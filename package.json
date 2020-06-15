@@ -1,6 +1,6 @@
 {
   "name": "react-truncate-markup",
-  "version": "4.1.1",
+  "version": "5.0.0",
   "description": "React component for truncating JSX markup",
   "main": "lib/index.js",
   "jsnext:main": "es/index.js",
