@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { render } from 'react-dom';
 import { ResizableBox } from 'react-resizable';
 import Prism from 'prismjs';
+import Avatar from './Avatar';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/components/prism-jsx';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -126,6 +127,49 @@ const OnTruncateCallbackCodeHighlight = (
     />
   </pre>
 );
+
+const AvatarList = () => {
+  const user = {
+    name: 'Patrik Piskay',
+    image:
+      'https://avatars2.githubusercontent.com/u/966953?s=460&u=6e5b5f2a85a02ace66548f5cf1a105a22f73fc71',
+  };
+
+  const users = Array(6)
+    .fill(user)
+    .map((user, index) => ({ ...user, id: index }));
+
+  const usersLeftEllipsis = (node) => {
+    const usersRendered = node.props.children;
+
+    return `+${users.length - usersRendered.length} more`;
+  };
+
+  return (
+    <ResizableBox
+      width={240}
+      height={40}
+      minConstraints={[100, 40]}
+      maxConstraints={[450, 40]}
+      className="box"
+    >
+      <TruncateMarkup lines={1} lineHeight="38px" ellipsis={usersLeftEllipsis}>
+        <div
+          style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+        >
+          {users.map((user) => (
+            <TruncateMarkup.Atom key={user.id}>
+              <Avatar user={user} />
+            </TruncateMarkup.Atom>
+          ))}
+        </div>
+      </TruncateMarkup>
+    </ResizableBox>
+  );
+};
+
+const Foo = (props) => props.children;
+
 class Demo extends Component {
   state = { shouldTruncate: true };
 
@@ -157,6 +201,10 @@ class Demo extends Component {
             <a href="#resizable-box">resizable box</a>
             <a href="#onTruncate-callback">onTruncate callback</a>
             <a href="#tokenize-words">tokenize: words</a>
+            <a href="#atoms">TruncateMarkup.Atom</a>
+            <a href="#atoms-avatars" className="indented">
+              Avatars example
+            </a>
           </div>
         </div>
         <div className="main">
@@ -621,6 +669,113 @@ const wordCountEllipsis = node => {
   <div>{longText}</div>
 </TruncateMarkup>
   `,
+                      Prism.languages.javascript,
+                    ),
+                  }}
+                />
+              </pre>
+            </div>
+          </div>
+
+          <h2 id="atoms">TruncateMarkup.Atom</h2>
+          <div className="block">
+            <div className="eval">
+              <ResizableBox
+                width={240}
+                height={75}
+                minConstraints={[80, 75]}
+                maxConstraints={[600, 75]}
+                className="box"
+              >
+                <TruncateMarkup lines={3}>
+                  <div>
+                    <b>
+                      (<i>NORMAL</i> text - splittable anywhere)
+                    </b>
+                    <TruncateMarkup.Atom>
+                      <i> (atomic, not splittable) </i>
+                    </TruncateMarkup.Atom>
+                    <TruncateMarkup.Atom>
+                      <Foo>
+                        <b>(Foo Component that can be used, not splittable)</b>
+                      </Foo>
+                    </TruncateMarkup.Atom>
+                  </div>
+                </TruncateMarkup>
+              </ResizableBox>
+            </div>
+            <div className="code">
+              <pre>
+                <code
+                  className="language-jsx"
+                  dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(
+                      `<TruncateMarkup lines={3}>
+  <div>
+    <b>
+      (<i>NORMAL</i> text - splittable anywhere)
+    </b>
+
+    <TruncateMarkup.Atom>
+      <i> (atomic, not splittable) </i>
+    </TruncateMarkup.Atom>
+
+    <TruncateMarkup.Atom>
+      <Foo>
+        <b>(Foo Component that can be used, not splittable)</b>
+      </Foo>
+    </TruncateMarkup.Atom>
+  </div>
+</TruncateMarkup>
+`,
+                      Prism.languages.javascript,
+                    ),
+                  }}
+                />
+              </pre>
+            </div>
+          </div>
+
+          <h2 id="atoms-avatars">Avatars example</h2>
+          <div className="block">
+            <div className="eval">
+              <AvatarList />
+            </div>
+
+            <div className="code">
+              <pre>
+                <code
+                  className="language-jsx"
+                  dangerouslySetInnerHTML={{
+                    __html: Prism.highlight(
+                      `const user = {
+  name: 'Patrik Piskay',
+  image:
+    'https://avatars2.githubusercontent.com/u/966953?s=460&u=6e5b5f2a85a02ace66548f5cf1a105a22f73fc71',
+};
+
+const users = Array(6)
+  .fill(user)
+  .map((user, index) => ({ ...user, id: index }));
+
+const usersLeftEllipsis = (node) => {
+  const usersRendered = node.props.children;
+
+  return \`+\${users.length - usersRendered.length} more\`;
+};
+
+<TruncateMarkup lines={1} lineHeight="38px" ellipsis={usersLeftEllipsis}>
+  <div
+    style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}
+  >
+    {users.map((user) => (
+      <TruncateMarkup.Atom key={user.id}>
+        <Avatar user={user} />
+      </TruncateMarkup.Atom>
+    ))}
+  </div>
+</TruncateMarkup>
+`,
                       Prism.languages.javascript,
                     ),
                   }}

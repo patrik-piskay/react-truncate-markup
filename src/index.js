@@ -1,8 +1,10 @@
 import React from 'react';
+import memoizeOne from 'memoize-one';
 import PropTypes from 'prop-types';
 import getLineHeight from 'line-height';
 import ResizeObserver from 'resize-observer-polyfill';
 import TOKENIZE_POLICY from './tokenize-rules';
+import { Atom, isAtomComponent, ATOM_STRING_ID } from './atom';
 
 const SPLIT = {
   LEFT: true,
@@ -14,28 +16,14 @@ const toString = (node, string = '') => {
     return string;
   } else if (typeof node === 'string') {
     return string + node;
-  } else if (Array.isArray(node)) {
-    let newString = string;
-    node.forEach((child) => {
-      newString = toString(child, newString);
-    });
-
-    return newString;
+  } else if (isAtomComponent(node)) {
+    return string + ATOM_STRING_ID;
   }
+  const children = Array.isArray(node) ? node : node.props.children || '';
 
-  return toString(node.props.children, string);
-};
-
-const getTokenizePolicyByProp = (tokenize) => {
-  if (process.env.NODE_ENV !== 'production' && !TOKENIZE_POLICY[tokenize]) {
-    /* eslint-disable no-console */
-    console.warn(
-      `ReactTruncateMarkup: Unknown option for prop 'tokenize': '${tokenize}'. Option 'characters' will be used instead.`,
-    );
-    /* eslint-enable */
-  }
-
-  return TOKENIZE_POLICY[tokenize] || TOKENIZE_POLICY.characters;
+  return (
+    string + React.Children.map(children, (child) => toString(child)).join('')
+  );
 };
 
 const cloneWithChildren = (node, children, isRootEl, level) => {
@@ -68,13 +56,13 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
 };
 
 const validateTree = (node) => {
-  if (typeof node === 'string') {
+  if (typeof node === 'string' || isAtomComponent(node)) {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
       /* eslint-disable no-console */
       console.error(
-        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported.`,
+        `ReactTruncateMarkup tried to render <${node.type.name} />, but truncating React components is not supported, the full content is rendered instead. Only DOM elements are supported. Alternatively, you can take advantage of the <TruncateMarkup.Atom /> component (see more in the docs https://github.com/parsable/react-truncate-markup/blob/master/README.md#truncatemarkupatom-).`,
       );
       /* eslint-enable */
     }
@@ -83,20 +71,18 @@ const validateTree = (node) => {
   }
 
   if (node.props.children) {
-    if (Array.isArray(node.props.children)) {
-      return node.props.children.reduce(
-        (isValid, child) => isValid && validateTree(child),
-        true,
-      );
-    }
-
-    return validateTree(node.props.children);
+    return React.Children.toArray(node.props.children).reduce(
+      (isValid, child) => isValid && validateTree(child),
+      true,
+    );
   }
 
   return true;
 };
 
 export default class TruncateMarkup extends React.Component {
+  static Atom = Atom;
+
   static propTypes = {
     children: PropTypes.element.isRequired,
     lines: PropTypes.number,
@@ -115,7 +101,19 @@ export default class TruncateMarkup extends React.Component {
         );
       }
     },
-    tokenize: PropTypes.oneOf(['characters', 'words']),
+    tokenize: (props, propName, componentName) => {
+      const tokenizeValue = props[propName];
+
+      if (typeof tokenizeValue !== 'undefined') {
+        if (!TOKENIZE_POLICY[tokenizeValue]) {
+          /* eslint-disable no-console */
+          return new Error(
+            `${componentName}: Unknown option for prop 'tokenize': '${tokenizeValue}'. Option 'characters' will be used instead.`,
+          );
+          /* eslint-enable */
+        }
+      }
+    },
   };
 
   static defaultProps = {
@@ -130,51 +128,56 @@ export default class TruncateMarkup extends React.Component {
     super(props);
 
     this.state = {
-      text: this.childrenElementWithRef(this.props.children),
+      text: this.childrenWithRefMemo(this.props.children),
     };
   }
 
-  isValid = validateTree(this.props.children);
   lineHeight = null;
   splitDirectionSeq = [];
   shouldTruncate = true;
   wasLastCharTested = false;
   endFound = false;
   latestThatFits = null;
-  origText = null;
   onTruncateCalled = false;
-  policy = null;
+
+  toStringMemo = memoizeOne(toString);
+  childrenWithRefMemo = memoizeOne(this.childrenElementWithRef);
+  validateTreeMemo = memoizeOne(validateTree);
+
+  get isValid() {
+    return this.validateTreeMemo(this.props.children);
+  }
+  get origText() {
+    return this.childrenWithRefMemo(this.props.children);
+  }
+  get policy() {
+    return TOKENIZE_POLICY[this.props.tokenize] || TOKENIZE_POLICY.characters;
+  }
 
   componentDidMount() {
     if (!this.isValid) {
       return;
     }
 
-    this.origText = this.state.text;
-
     // get the computed line-height of the parent element
     // it'll be used for determining whether the text fits the container or not
     this.lineHeight = this.props.lineHeight || getLineHeight(this.el);
-    this.policy = getTokenizePolicyByProp(this.props.tokenize);
     this.truncate();
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    this.policy = getTokenizePolicyByProp(nextProps.tokenize);
     this.shouldTruncate = false;
     this.latestThatFits = null;
-    this.isValid = validateTree(nextProps.children);
 
     this.setState(
       {
-        text: this.childrenElementWithRef(nextProps.children),
+        text: this.childrenWithRefMemo(nextProps.children),
       },
       () => {
         if (!this.isValid) {
           return;
         }
 
-        this.origText = this.state.text;
         this.lineHeight = nextProps.lineHeight || getLineHeight(this.el);
         this.shouldTruncate = true;
         this.truncate();
@@ -191,7 +194,10 @@ export default class TruncateMarkup extends React.Component {
       // we've found the end where we cannot split the text further
       // that means we've already found the max subtree that fits the container
       // so we are rendering that
-      if (this.state.text !== this.latestThatFits) {
+      if (
+        this.latestThatFits !== null &&
+        this.state.text !== this.latestThatFits
+      ) {
         /* eslint-disable react/no-did-update-set-state */
         this.setState({
           text: this.latestThatFits,
@@ -229,7 +235,6 @@ export default class TruncateMarkup extends React.Component {
 
   componentWillUnmount() {
     this.lineHeight = null;
-    this.origText = null;
     this.latestThatFits = null;
     this.splitDirectionSeq = [];
   }
@@ -345,9 +350,7 @@ export default class TruncateMarkup extends React.Component {
         : ellipsis;
 
     const newChildren = newRootEl.props.children;
-    const newChildrenWithEllipsis = Array.isArray(newChildren)
-      ? [...newChildren, ellipsis]
-      : [newChildren, ellipsis];
+    const newChildrenWithEllipsis = [].concat(newChildren, ellipsis);
 
     // edge case tradeoff EC#1 - on initial render it doesn't fit in the requested number of lines (1) so it starts truncating
     // - because of truncating and the ellipsis position, div#lvl2 will have display set to 'inline-block',
@@ -363,7 +366,7 @@ export default class TruncateMarkup extends React.Component {
     //   </div>
     // </TruncateMarkup>
     const shouldRenderEllipsis =
-      toString(newChildren) !== toString(this.origText);
+      toString(newChildren) !== this.toStringMemo(this.props.children);
 
     this.setState({
       text: {
@@ -389,7 +392,9 @@ export default class TruncateMarkup extends React.Component {
    * @return {null|string|Array|Object} - split JSX node
    */
   split(node, splitDirections, isRoot = false, level = 1) {
-    if (!node) {
+    if (!node || isAtomComponent(node)) {
+      this.endFound = true;
+
       return node;
     } else if (typeof node === 'string') {
       return this.splitString(node, splitDirections, level);
@@ -458,21 +463,7 @@ export default class TruncateMarkup extends React.Component {
     }
 
     if (array.length === 1) {
-      const [item] = array;
-
-      if (typeof item === 'string') {
-        return [this.splitString(item, splitDirections, level)];
-      }
-      const { children } = item.props;
-
-      const newChildren = this.split(
-        children,
-        splitDirections,
-        /* isRoot */ false,
-        level + 1,
-      );
-
-      return [cloneWithChildren(item, newChildren, /* isRoot */ false, level)];
+      return [this.split(array[0], splitDirections, /* isRoot */ false, level)];
     }
 
     const [splitDirection, ...restSplitDirections] = splitDirections;
