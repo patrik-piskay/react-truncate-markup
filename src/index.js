@@ -314,6 +314,10 @@ export default class TruncateMarkup extends React.Component {
 
     return React.cloneElement(child, {
       ref: this.setRef,
+      style: {
+        wordWrap: 'break-word',
+        ...child.props.style,
+      },
     });
   }
 
@@ -373,10 +377,6 @@ export default class TruncateMarkup extends React.Component {
         ...newRootEl,
         props: {
           ...newRootEl.props,
-          style: {
-            wordWrap: 'break-word',
-            ...newRootEl.props.style,
-          },
           children: shouldRenderEllipsis
             ? newChildrenWithEllipsis
             : newChildren,
