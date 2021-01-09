@@ -8,6 +8,8 @@ export interface TruncateProps {
   onTruncate?: (wasTruncated: boolean) => any;
 }
 
-declare class TruncateMarkup extends React.Component<TruncateProps> {}
+declare class TruncateMarkup extends React.Component<TruncateProps> {
+  static Atom: React.ComponentType;
+}
 
 export default TruncateMarkup;
