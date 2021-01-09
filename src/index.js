@@ -485,15 +485,6 @@ export default class TruncateMarkup extends React.Component {
     const { height } = this.el.getBoundingClientRect();
     const computedLines = Math.round(height / parseFloat(this.lineHeight));
 
-    if (process.env.NODE_ENV !== 'production' && computedLines <= 0) {
-      /* eslint-disable no-console */
-      console.warn(
-        `ReactTruncateMarkup: number of currently rendered lines: ${computedLines}, not truncating...
-  It may be caused by target element not being visible at the time of computation.`,
-      );
-      /* eslint-enable */
-    }
-
     return maxLines >= computedLines;
   }
 
