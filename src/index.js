@@ -56,7 +56,7 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
 };
 
 const validateTree = (node) => {
-  if (typeof node === 'string' || isAtomComponent(node)) {
+  if (['string', 'number'].includes(typeof node) || isAtomComponent(node)) {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
