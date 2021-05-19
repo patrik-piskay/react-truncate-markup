@@ -58,7 +58,6 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
 const validateTree = (node) => {
   if (
     node === null ||
-    node === undefined ||
     ['string', 'number'].includes(typeof node) ||
     isAtomComponent(node)
   ) {
