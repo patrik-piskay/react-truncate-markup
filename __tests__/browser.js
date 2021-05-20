@@ -231,6 +231,16 @@ describe('TruncateMarkup', () => {
         expect(instance.isValid).toBe(true);
       }).toNotThrow();
     });
+
+    it('handles number as children', () => {
+      const instance = new TruncateMarkup({
+        children: <div>{1}</div>,
+      });
+
+      expect(() => {
+        expect(instance.isValid).toBe(true);
+      }).toNotThrow();
+    });
   });
 
   describe('truncate updates complexity', () => {

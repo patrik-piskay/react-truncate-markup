@@ -56,7 +56,11 @@ const cloneWithChildren = (node, children, isRootEl, level) => {
 };
 
 const validateTree = (node) => {
-  if (typeof node === 'string' || isAtomComponent(node)) {
+  if (
+    node == null ||
+    ['string', 'number'].includes(typeof node) ||
+    isAtomComponent(node)
+  ) {
     return true;
   } else if (typeof node.type === 'function') {
     if (process.env.NODE_ENV !== 'production') {
@@ -70,7 +74,7 @@ const validateTree = (node) => {
     return false;
   }
 
-  if (node.props.children) {
+  if (node.props && node.props.children) {
     return React.Children.toArray(node.props.children).reduce(
       (isValid, child) => isValid && validateTree(child),
       true,
