@@ -1,8 +1,8 @@
 # React Truncate Markup
 
-[![Travis](https://img.shields.io/travis/parsable/react-truncate-markup.svg?style=flat-square)](https://travis-ci.org/parsable/react-truncate-markup)
+[![Travis](https://img.shields.io/travis/patrik-piskay/react-truncate-markup.svg?style=flat-square)](https://travis-ci.org/patrik-piskay/react-truncate-markup)
 [![version](https://img.shields.io/npm/v/react-truncate-markup.svg?style=flat-square)](https://www.npmjs.com/package/react-truncate-markup)
-[![License](https://img.shields.io/npm/l/react-truncate-markup.svg?style=flat-square)](https://github.com/parsable/react-truncate-markup/blob/master/LICENSE.md)
+[![License](https://img.shields.io/npm/l/react-truncate-markup.svg?style=flat-square)](https://github.com/patrik-piskay/react-truncate-markup/blob/master/LICENSE.md)
 
 React component for truncating JSX markup.
 
@@ -83,7 +83,7 @@ const TruncateMarkup = ReactTruncateMarkup.default;
 
 > #### :warning: Warning
 >
-> Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/parsable/react-truncate-markup/issues/12#issuecomment-444761758).  
+> Only inlined [DOM elements](https://reactjs.org/docs/dom-elements.html) are supported when using this library. When trying to truncate React components (class or function), `<TruncateMarkup />` will warn about it, skip truncation and display the whole content instead. For more details, please read [this comment](https://github.com/patrik-piskay/react-truncate-markup/issues/12#issuecomment-444761758).  
 >  
 > Or, since version 5, you can take advantage of the [`<TruncateMarkup.Atom />` component](#truncatemarkupatom-).
 
@@ -217,10 +217,10 @@ You can see this example in action in the [examples/demo app](#react-truncate-ma
 
 ## Contributing
 
-Read more about project setup and contributing in [CONTRIBUTING.md](https://github.com/parsable/react-truncate-markup/blob/master/CONTRIBUTING.md)
+Read more about project setup and contributing in [CONTRIBUTING.md](https://github.com/patrik-piskay/react-truncate-markup/blob/master/CONTRIBUTING.md)
 
 ## License
 
-Released under Apache-2.0 license.
+Released under MIT license.
 
-Copyright &copy; 2017-present Parsable Inc.
+Copyright &copy; 2022-present Patrik Piskay.
